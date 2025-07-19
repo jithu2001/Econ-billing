@@ -1,0 +1,6 @@
+backend/uploads/ids/
+ecom-app/frontend/dist/
+ecom-app/frontend/node_modules/
+ecom-app/frontend/build/
+.DS_Store
+Thumbs.db
