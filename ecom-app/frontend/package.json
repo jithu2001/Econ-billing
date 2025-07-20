@@ -66,8 +66,9 @@
     ],
     "extraResources": [
       {
-        "from": "../backend/main",
-        "to": "backend/main"
+        "from": "../backend/main*",
+        "to": "backend/",
+        "filter": ["main", "main.exe"]
       }
     ],
     "mac": {

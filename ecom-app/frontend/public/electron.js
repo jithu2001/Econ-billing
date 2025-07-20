@@ -15,11 +15,13 @@ function startBackendServer() {
   
   if (app.isPackaged) {
     // In packaged mode
-    backendPath = path.join(process.resourcesPath, 'backend', 'main');
+    const backendExe = process.platform === 'win32' ? 'main.exe' : 'main';
+    backendPath = path.join(process.resourcesPath, 'backend', backendExe);
     cwd = process.resourcesPath;
   } else {
     // In development mode (both with dev server and production build)
-    backendPath = path.join(__dirname, '..', '..', 'backend', 'main');
+    const backendExe = process.platform === 'win32' ? 'main.exe' : 'main';
+    backendPath = path.join(__dirname, '..', '..', 'backend', backendExe);
     cwd = path.join(__dirname, '..', '..', 'backend');
   }
 

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"ecom-app/internal/config"
 	"ecom-app/internal/database"
 	"ecom-app/internal/handlers"
 	"github.com/gorilla/mux"
@@ -73,8 +74,13 @@ func main() {
 	router.HandleFunc("/api/reports/rental", reportsHandler.GetRentalReport).Methods("GET")
 	router.HandleFunc("/api/reports/rental/export", reportsHandler.ExportRentalReportCSV).Methods("GET")
 	
+	// Ensure upload directories exist
+	if err := config.EnsureUploadDirs(); err != nil {
+		log.Fatal("Failed to create upload directories:", err)
+	}
+	
 	// Static file serving for uploaded photos
-	router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads/"))))
+	router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir(config.GetUploadsDir()))))
 	
 	// Setup CORS
 	c := cors.New(cors.Options{

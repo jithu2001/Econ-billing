@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"ecom-app/internal/config"
 	"ecom-app/internal/database"
 	"ecom-app/internal/models"
 	"ecom-app/pkg/utils"
@@ -133,7 +134,7 @@ func (h *CustomerHandler) CreateCustomer(w http.ResponseWriter, r *http.Request)
 		defer file.Close()
 		
 		// Save the uploaded file
-		filename, err := utils.SaveUploadedFile(file, header, "uploads/ids")
+		filename, err := utils.SaveUploadedFile(file, header, config.GetIDCardsDir())
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
