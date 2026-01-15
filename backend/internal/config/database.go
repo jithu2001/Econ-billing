@@ -27,6 +27,7 @@ func InitDatabase(dbPath string) *gorm.DB {
 		&models.Bill{},
 		&models.BillLineItem{},
 		&models.Payment{},
+		&models.Settings{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)

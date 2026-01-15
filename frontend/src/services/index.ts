@@ -3,3 +3,4 @@ export * from './customer.service';
 export * from './room.service';
 export * from './reservation.service';
 export * from './bill.service';
+export * from './settings.service';

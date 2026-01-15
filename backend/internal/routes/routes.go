@@ -14,6 +14,7 @@ type Handlers struct {
 	Reservation *handlers.ReservationHandler
 	Bill        *handlers.BillHandler
 	Payment     *handlers.PaymentHandler
+	Settings    *handlers.SettingsHandler
 }
 
 func SetupRoutes(router *gin.Engine, h *Handlers, jwtSecret string) {
@@ -74,6 +75,13 @@ func SetupRoutes(router *gin.Engine, h *Handlers, jwtSecret string) {
 			bills.POST("/:id/finalize", h.Bill.Finalize)
 			bills.POST("/:id/payments", h.Payment.Create)
 			bills.GET("/:id/payments", h.Payment.GetByBillID)
+		}
+
+		// Settings
+		settings := api.Group("/settings")
+		{
+			settings.GET("", h.Settings.Get)
+			settings.POST("", h.Settings.Save)
 		}
 	}
 }

@@ -90,3 +90,16 @@ export interface Payment {
   payment_method: 'Cash' | 'Card' | 'UPI'
   payment_date: string
 }
+
+// Settings types
+export interface Settings {
+  id?: string
+  lodge_name: string
+  address: string
+  phone: string
+  gst_number: string
+  state_name: string
+  state_code: string
+  created_at?: string
+  updated_at?: string
+}

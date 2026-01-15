@@ -26,6 +26,7 @@ func main() {
 	reservationRepo := repository.NewReservationRepository(db)
 	billRepo := repository.NewBillRepository(db)
 	paymentRepo := repository.NewPaymentRepository(db)
+	settingsRepo := repository.NewSettingsRepository(db)
 
 	// Initialize services
 	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
@@ -34,6 +35,7 @@ func main() {
 	reservationService := services.NewReservationService(reservationRepo, roomRepo)
 	billService := services.NewBillService(billRepo)
 	paymentService := services.NewPaymentService(paymentRepo, billRepo)
+	settingsService := services.NewSettingsService(settingsRepo)
 
 	// Initialize handlers
 	h := &routes.Handlers{
@@ -43,6 +45,7 @@ func main() {
 		Reservation: handlers.NewReservationHandler(reservationService),
 		Bill:        handlers.NewBillHandler(billService),
 		Payment:     handlers.NewPaymentHandler(paymentService),
+		Settings:    handlers.NewSettingsHandler(settingsService),
 	}
 
 	// Setup Gin router

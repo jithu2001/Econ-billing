@@ -6,6 +6,7 @@ import CustomerDetails from './pages/customers/CustomerDetails'
 import RoomList from './pages/rooms/RoomList'
 import ReservationList from './pages/reservations/ReservationList'
 import BillList from './pages/bills/BillList'
+import SettingsPage from './pages/settings/Settings'
 import Login from './pages/Login'
 import { authService } from './services/auth.service'
 
@@ -34,6 +35,7 @@ function App() {
           <Route path="rooms" element={<RoomList />} />
           <Route path="reservations" element={<ReservationList />} />
           <Route path="bills" element={<BillList />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>
     </Router>

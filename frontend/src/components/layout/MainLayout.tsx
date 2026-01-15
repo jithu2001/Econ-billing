@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Home, Users, Building2, Calendar, Receipt, LogOut, Sparkles } from 'lucide-react'
+import { Home, Users, Building2, Calendar, Receipt, LogOut, Sparkles, Settings } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { authService } from '@/services/auth.service'
+import { settingsService } from '@/services/settings.service'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -9,11 +11,28 @@ const navigation = [
   { name: 'Rooms', href: '/rooms', icon: Building2 },
   { name: 'Reservations', href: '/reservations', icon: Calendar },
   { name: 'Bills', href: '/bills', icon: Receipt },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export default function MainLayout() {
   const location = useLocation()
   const user = authService.getCurrentUser()
+  const [lodgeName, setLodgeName] = useState('Lodge')
+
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const loadSettings = async () => {
+    try {
+      const settings = await settingsService.get()
+      if (settings.lodge_name) {
+        setLodgeName(settings.lodge_name)
+      }
+    } catch (error) {
+      console.error('Failed to load settings:', error)
+    }
+  }
 
   const handleLogout = () => {
     authService.logout()
@@ -32,7 +51,7 @@ export default function MainLayout() {
                   <Building2 className="w-8 h-8 text-purple-400 drop-shadow-[0_0_8px_rgba(167,139,250,0.6)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(167,139,250,0.8)]" />
                   <Sparkles className="w-4 h-4 text-pink-400 absolute -top-1 -right-1 animate-pulse" />
                 </div>
-                <span className="gradient-text text-2xl font-bold">Trinity Lodge</span>
+                <span className="gradient-text text-2xl font-bold">{lodgeName}</span>
               </Link>
 
               {/* Navigation Links */}
@@ -110,7 +129,7 @@ export default function MainLayout() {
         <div className="container mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-slate-500">
-              © 2026 Trinity Lodge. All rights reserved.
+              © {new Date().getFullYear()} {lodgeName}. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <a href="#" className="text-sm text-slate-500 hover:text-purple-400 transition-colors">
