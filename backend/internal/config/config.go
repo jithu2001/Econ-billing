@@ -5,17 +5,19 @@ import (
 )
 
 type Config struct {
-	ServerPort     string
-	DatabasePath   string
-	JWTSecret      string
-	AllowedOrigins []string
+	ServerPort        string
+	DatabasePath      string
+	JWTSecret         string
+	RegistrationToken string
+	AllowedOrigins    []string
 }
 
 func LoadConfig() *Config {
 	return &Config{
-		ServerPort:   getEnv("SERVER_PORT", "8080"),
-		DatabasePath: getEnv("DATABASE_PATH", "./trinity.db"),
-		JWTSecret:    getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
+		ServerPort:        getEnv("SERVER_PORT", "8080"),
+		DatabasePath:      getEnv("DATABASE_PATH", "./trinity.db"),
+		JWTSecret:         getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
+		RegistrationToken: getEnv("REGISTRATION_TOKEN", "919847073856"),
 		AllowedOrigins: []string{
 			"http://localhost:5173",
 			"http://localhost:5174",

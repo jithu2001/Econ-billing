@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Phone, MapPin, IdCard, Plus, Receipt, CreditCard } from 'lucide-react'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
+import { ArrowLeft, Phone, MapPin, IdCard, Plus, Receipt, CreditCard, Calendar, Eye, FileText, Wallet } from 'lucide-react'
 import BillModal from '../../components/bills/BillModal'
 import BillViewModal from '../../components/bills/BillViewModal'
 import PaymentForm from '../../components/payments/PaymentForm'
@@ -62,20 +58,21 @@ export default function CustomerDetails() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-lg text-muted-foreground">Loading customer data...</div>
+        <div className="spinner" />
       </div>
     )
   }
 
   if (!customer) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold">Customer not found</h2>
-          <Button onClick={() => navigate('/customers')} className="mt-4">
-            Back to Customers
-          </Button>
-        </div>
+      <div className="flex flex-col items-center justify-center h-96 gap-4">
+        <h2 className="text-2xl font-bold text-slate-200">Customer not found</h2>
+        <button
+          onClick={() => navigate('/customers')}
+          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+        >
+          Back to Customers
+        </button>
       </div>
     )
   }
@@ -159,16 +156,55 @@ export default function CustomerDetails() {
     }
   }
 
+  const tabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'reservations', label: 'Reservations' },
+    { id: 'bills', label: 'Bills' },
+    { id: 'payments', label: 'Payments' },
+  ]
+
+  const getStatusBadge = (status: string, type: 'reservation' | 'bill') => {
+    const styles: Record<string, string> = {
+      // Reservation statuses
+      CONFIRMED: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      CHECKED_IN: 'bg-green-500/20 text-green-400 border-green-500/30',
+      CHECKED_OUT: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+      CANCELLED: 'bg-red-500/20 text-red-400 border-red-500/30',
+      // Bill statuses
+      DRAFT: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+      FINALIZED: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      PAID: 'bg-green-500/20 text-green-400 border-green-500/30',
+      UNPAID: 'bg-red-500/20 text-red-400 border-red-500/30',
+    }
+
+    return (
+      <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold border ${styles[status] || 'bg-slate-500/20 text-slate-400 border-slate-500/30'}`}>
+        <div className={`w-2 h-2 rounded-full ${status === 'PAID' || status === 'CHECKED_IN' ? 'bg-green-400 animate-pulse' : status === 'CONFIRMED' || status === 'FINALIZED' ? 'bg-blue-400' : 'bg-slate-400'}`} />
+        {status}
+      </span>
+    )
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => navigate('/customers')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+      <div className="flex items-center gap-4 slide-in-left">
+        <button
+          onClick={() => navigate('/customers')}
+          className="p-2 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-400 hover:text-white hover:border-purple-500/30 transition-all"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">{customer.full_name}</h1>
-          <p className="text-muted-foreground">Customer details and history</p>
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-purple-500/30">
+              {customer.full_name.charAt(0)}
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold gradient-text">{customer.full_name}</h1>
+              <p className="text-slate-400">Customer details and history</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -207,260 +243,271 @@ export default function CustomerDetails() {
       />
 
       {/* Customer Info Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="flex items-start gap-3">
-              <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-muted-foreground">Phone</div>
-                <div className="text-base font-medium">{customer.phone}</div>
-              </div>
+      <div className="glass-card p-6 rounded-xl fade-in" style={{ animationDelay: '0.1s', opacity: 0 }}>
+        <h2 className="text-lg font-semibold text-slate-200 mb-4">Customer Information</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <Phone className="h-5 w-5 text-purple-400" />
             </div>
-            <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-muted-foreground">Address</div>
-                <div className="text-base font-medium">{customer.address}</div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <IdCard className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-muted-foreground">ID Proof</div>
-                <div className="text-base font-medium">{customer.id_proof_type}</div>
-                <div className="text-sm text-muted-foreground">{customer.id_proof_number}</div>
-              </div>
+            <div>
+              <div className="text-sm font-medium text-slate-400 mb-1">Phone</div>
+              <div className="text-base font-medium text-slate-200">{customer.phone}</div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-pink-500/10 rounded-lg">
+              <MapPin className="h-5 w-5 text-pink-400" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-slate-400 mb-1">Address</div>
+              <div className="text-base font-medium text-slate-200">{customer.address}</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-teal-500/10 rounded-lg">
+              <IdCard className="h-5 w-5 text-teal-400" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-slate-400 mb-1">ID Proof</div>
+              <div className="text-base font-medium text-slate-200">{customer.id_proof_type}</div>
+              <div className="text-sm text-slate-400">{customer.id_proof_number}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Tabs */}
-      <Tabs>
-        <TabsList>
-          <TabsTrigger active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
-            Overview
-          </TabsTrigger>
-          <TabsTrigger active={activeTab === 'reservations'} onClick={() => setActiveTab('reservations')}>
-            Reservations
-          </TabsTrigger>
-          <TabsTrigger active={activeTab === 'bills'} onClick={() => setActiveTab('bills')}>
-            Bills
-          </TabsTrigger>
-          <TabsTrigger active={activeTab === 'payments'} onClick={() => setActiveTab('payments')}>
-            Payments
-          </TabsTrigger>
-        </TabsList>
+      <div className="space-y-4 fade-in" style={{ animationDelay: '0.2s', opacity: 0 }}>
+        {/* Tab Navigation */}
+        <div className="flex gap-2 p-1 bg-slate-800/50 rounded-xl w-fit">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                activeTab === tab.id
+                  ? 'bg-purple-500/20 text-purple-400 shadow-lg shadow-purple-500/20'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
         {/* Overview Tab */}
-        {activeTab === 'overview' && (<TabsContent>
+        {activeTab === 'overview' && (
           <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">Total Reservations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{reservations.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">Total Bills</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{bills.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ₹{bills.reduce((sum, bill) => sum + bill.total_amount, 0).toFixed(2)}
+            {[
+              { label: 'Total Reservations', value: reservations.length, icon: Calendar, color: 'purple' },
+              { label: 'Total Bills', value: bills.length, icon: Receipt, color: 'pink' },
+              { label: 'Total Amount', value: `₹${bills.reduce((sum, bill) => sum + bill.total_amount, 0).toFixed(2)}`, icon: Wallet, color: 'teal' },
+            ].map((stat, idx) => {
+              const Icon = stat.icon
+              const colorClasses = {
+                purple: { bg: 'bg-purple-500/10', text: 'text-purple-400', shadow: 'group-hover:shadow-purple-500/30' },
+                pink: { bg: 'bg-pink-500/10', text: 'text-pink-400', shadow: 'group-hover:shadow-pink-500/30' },
+                teal: { bg: 'bg-teal-500/10', text: 'text-teal-400', shadow: 'group-hover:shadow-teal-500/30' },
+              }
+              const colors = colorClasses[stat.color as keyof typeof colorClasses]
+              return (
+                <div
+                  key={stat.label}
+                  className="glass-card p-6 rounded-xl group relative overflow-hidden fade-in"
+                  style={{ animationDelay: `${0.3 + idx * 0.1}s`, opacity: 0 }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                  <div className="relative z-10">
+                    <div className={`p-3 ${colors.bg} rounded-xl inline-block mb-4 ${colors.shadow} transition-all`}>
+                      <Icon className={`w-6 h-6 ${colors.text}`} />
+                    </div>
+                    <p className="text-sm font-medium text-slate-400 mb-1">{stat.label}</p>
+                    <p className={`text-2xl font-bold ${colors.text}`}>{stat.value}</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              )
+            })}
           </div>
-        </TabsContent>)}
+        )}
 
         {/* Reservations Tab */}
-        {activeTab === 'reservations' && (<TabsContent>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Reservations</CardTitle>
-                <Button size="sm" onClick={() => setIsReservationFormOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Reservation
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Check-in</TableHead>
-                    <TableHead>Check-out</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+        {activeTab === 'reservations' && (
+          <div className="glass-card rounded-xl overflow-hidden">
+            <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-200">Reservations</h2>
+              <button
+                onClick={() => setIsReservationFormOpen(true)}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-medium text-white text-sm hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                New Reservation
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-700/50">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-in</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-out</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
                   {reservations.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        No reservations found
-                      </TableCell>
-                    </TableRow>
+                    <tr>
+                      <td colSpan={4} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <Calendar className="w-12 h-12 text-slate-600" />
+                          <p className="text-slate-400">No reservations found</p>
+                        </div>
+                      </td>
+                    </tr>
                   ) : (
                     reservations.map((reservation) => (
-                      <TableRow key={reservation.id}>
-                        <TableCell>{new Date(reservation.check_in_date).toLocaleDateString()}</TableCell>
-                        <TableCell>{reservation.expected_check_out_date ? new Date(reservation.expected_check_out_date).toLocaleDateString() : 'N/A'}</TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800">
-                            {reservation.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm" onClick={() => handleCreateBill(reservation.id)}>
-                            <Receipt className="mr-2 h-4 w-4" />
+                      <tr key={reservation.id} className="group hover:bg-slate-800/30 transition-all">
+                        <td className="px-6 py-4 text-slate-300">{new Date(reservation.check_in_date).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-slate-300">{reservation.expected_check_out_date ? new Date(reservation.expected_check_out_date).toLocaleDateString() : 'N/A'}</td>
+                        <td className="px-6 py-4">{getStatusBadge(reservation.status, 'reservation')}</td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => handleCreateBill(reservation.id)}
+                            className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-lg text-purple-400 text-sm font-medium hover:bg-purple-500/20 transition-all flex items-center gap-2"
+                          >
+                            <Receipt className="h-4 w-4" />
                             Generate Bill
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                          </button>
+                        </td>
+                      </tr>
                     ))
                   )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>)}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Bills Tab */}
-        {activeTab === 'bills' && (<TabsContent>
-          <Card>
-            <CardHeader>
+        {activeTab === 'bills' && (
+          <div className="glass-card rounded-xl overflow-hidden">
+            <div className="p-6 border-b border-slate-700/50">
               <div className="flex items-center justify-between">
-                <CardTitle>Bills</CardTitle>
-                <Button size="sm" onClick={() => handleCreateBill()}>
-                  <Plus className="mr-2 h-4 w-4" />
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-200">Bills</h2>
+                  <p className="text-sm text-slate-400">All bills with and without reservations</p>
+                </div>
+                <button
+                  onClick={() => handleCreateBill()}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-medium text-white text-sm hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
                   Create Bill
-                </Button>
+                </button>
               </div>
-              <CardDescription>
-                All bills with and without reservations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Bill Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-700/50">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Bill Date</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Amount</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
                   {bills.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        No bills found
-                      </TableCell>
-                    </TableRow>
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <FileText className="w-12 h-12 text-slate-600" />
+                          <p className="text-slate-400">No bills found</p>
+                        </div>
+                      </td>
+                    </tr>
                   ) : (
                     bills.map((bill) => (
-                      <TableRow key={bill.id}>
-                        <TableCell>{new Date(bill.bill_date).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800">
+                      <tr key={bill.id} className="group hover:bg-slate-800/30 transition-all">
+                        <td className="px-6 py-4 text-slate-300">{new Date(bill.bill_date).toLocaleDateString()}</td>
+                        <td className="px-6 py-4">
+                          <span className="px-2.5 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg text-sm">
                             {bill.bill_type}
                           </span>
-                        </TableCell>
-                        <TableCell className="font-medium">₹{bill.total_amount.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            bill.status === 'PAID' ? 'bg-green-100 text-green-800' :
-                            bill.status === 'DRAFT' ? 'bg-gray-100 text-gray-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {bill.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-white">₹{bill.total_amount.toFixed(2)}</td>
+                        <td className="px-6 py-4">{getStatusBadge(bill.status, 'bill')}</td>
+                        <td className="px-6 py-4">
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => handleViewBill(bill)}>
-                              View
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            <button
+                              onClick={() => handleViewBill(bill)}
+                              className="p-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button
                               onClick={() => handleAddPayment(bill)}
                               disabled={bill.status === 'PAID'}
+                              className="px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm font-medium hover:bg-green-500/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <CreditCard className="mr-2 h-4 w-4" />
+                              <CreditCard className="h-4 w-4" />
                               Add Payment
-                            </Button>
+                            </button>
                           </div>
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ))
                   )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>)}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Payments Tab */}
-        {activeTab === 'payments' && (<TabsContent>
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment History</CardTitle>
-              <CardDescription>All payments made by this customer</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {customerPayments.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">
-                  No payments recorded yet
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Bill ID</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Method</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+        {activeTab === 'payments' && (
+          <div className="glass-card rounded-xl overflow-hidden">
+            <div className="p-6 border-b border-slate-700/50">
+              <h2 className="text-lg font-semibold text-slate-200">Payment History</h2>
+              <p className="text-sm text-slate-400">All payments made by this customer</p>
+            </div>
+            {customerPayments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <CreditCard className="w-12 h-12 text-slate-600" />
+                <p className="text-slate-400">No payments recorded yet</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-700/50">
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Bill ID</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Method</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50">
                     {customerPayments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
-                        <TableCell className="font-mono text-sm">{payment.bill_id}</TableCell>
-                        <TableCell className="font-medium">₹{payment.amount.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800">
+                      <tr key={payment.id} className="group hover:bg-slate-800/30 transition-all">
+                        <td className="px-6 py-4 text-slate-300">{new Date(payment.payment_date).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 font-mono text-sm text-slate-400">{payment.bill_id}</td>
+                        <td className="px-6 py-4 font-semibold text-white">₹{payment.amount.toFixed(2)}</td>
+                        <td className="px-6 py-4">
+                          <span className="px-2.5 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg text-sm">
                             {payment.payment_method}
                           </span>
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>)}
-      </Tabs>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

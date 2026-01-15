@@ -1,23 +1,38 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Calendar, User, Building2, Receipt } from 'lucide-react'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
+import { Plus, Calendar, User, Building2, Receipt, LogIn, LogOut, X, Clock } from 'lucide-react'
 import ReservationForm from '../../components/reservations/ReservationForm'
 import { reservationService, customerService, roomService } from '@/services'
 import type { Reservation, Customer, Room } from '../../types'
 import { handleApiError } from '@/lib/api'
 
 const getStatusBadge = (status: Reservation['status']) => {
-  const colors = {
-    ACTIVE: 'bg-green-100 text-green-800',
-    COMPLETED: 'bg-gray-100 text-gray-800',
-    CANCELLED: 'bg-red-100 text-red-800',
+  const styles = {
+    ACTIVE: {
+      bg: 'bg-green-500/20',
+      text: 'text-green-400',
+      border: 'border-green-500/30',
+      dot: 'bg-green-400'
+    },
+    COMPLETED: {
+      bg: 'bg-slate-500/20',
+      text: 'text-slate-400',
+      border: 'border-slate-500/30',
+      dot: 'bg-slate-400'
+    },
+    CANCELLED: {
+      bg: 'bg-red-500/20',
+      text: 'text-red-400',
+      border: 'border-red-500/30',
+      dot: 'bg-red-400'
+    },
   }
 
+  const style = styles[status]
+
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colors[status]}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${style.bg} ${style.text} ${style.border}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot} ${status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
       {status}
     </span>
   )
@@ -94,55 +109,55 @@ export default function ReservationList() {
   const completedReservations = reservations.filter(r => r.status === 'COMPLETED')
 
   const isCheckedIn = (reservation: Reservation) => {
-    // Check if the reservation has an actual check-in date
     return reservation.actual_check_in_date != null
   }
 
   const canCheckInToday = (checkInDate: string, checkOutDate: string) => {
     const today = new Date().toISOString().split('T')[0]
-    // Normalize dates to YYYY-MM-DD format (remove any time component)
     const normalizedCheckIn = checkInDate?.split('T')[0] || checkInDate
     const normalizedCheckOut = checkOutDate?.split('T')[0] || checkOutDate
-
-    // Can check in if today is on or after check-in date AND before checkout date
-    const result = normalizedCheckIn <= today && today < normalizedCheckOut
-
-    console.log('Check-in validation:', {
-      today,
-      checkInDate: normalizedCheckIn,
-      checkOutDate: normalizedCheckOut,
-      canCheckIn: result
-    })
-
-    return result
+    return normalizedCheckIn <= today && today < normalizedCheckOut
   }
 
   const calculateNights = (checkIn: string, checkOut: string) => {
     const start = new Date(checkIn)
     const end = new Date(checkOut)
     const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-    return Math.max(nights, 1) // At least 1 night
+    return Math.max(nights, 1)
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-muted-foreground">Loading reservations...</div>
+        <div className="spinner" />
       </div>
     )
   }
 
+  const statCards = [
+    { label: 'Total Reservations', value: reservations.length, color: 'purple' },
+    { label: 'Active', value: activeReservations.length, color: 'green' },
+    { label: 'Completed', value: completedReservations.length, color: 'slate' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Page Header */}
+      <div className="flex items-center justify-between slide-in-left">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Reservations</h1>
-          <p className="text-muted-foreground">Manage room bookings and check-ins</p>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-4xl font-bold gradient-text">Reservations</h1>
+          </div>
+          <p className="text-slate-400">Manage room bookings and check-ins</p>
         </div>
-        <Button onClick={() => setIsReservationFormOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Reservation
-        </Button>
+        <button
+          onClick={() => setIsReservationFormOpen(true)}
+          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 relative overflow-hidden group"
+        >
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000" />
+          <Plus className="w-5 h-5 relative z-10" />
+          <span className="relative z-10">New Reservation</span>
+        </button>
       </div>
 
       <ReservationForm
@@ -155,190 +170,204 @@ export default function ReservationList() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Reservations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{reservations.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{activeReservations.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-600">{completedReservations.length}</div>
-          </CardContent>
-        </Card>
+        {statCards.map((stat, idx) => (
+          <div
+            key={stat.label}
+            className="glass-card fade-in"
+            style={{ animationDelay: `${idx * 0.1}s`, opacity: 0 }}
+          >
+            <p className="text-sm font-medium text-slate-400 mb-2">{stat.label}</p>
+            <p className={`text-3xl font-bold ${
+              stat.color === 'purple' ? 'text-white' :
+              stat.color === 'green' ? 'text-green-400' : 'text-slate-400'
+            }`}>
+              {stat.value}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* Active Reservations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Active Reservations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Room</TableHead>
-                <TableHead>Check-in</TableHead>
-                <TableHead>Expected Checkout</TableHead>
-                <TableHead>Nights</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      <div className="glass-card fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-green-500/10 rounded-lg">
+            <Calendar className="w-5 h-5 text-green-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-white">Active Reservations</h2>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-700">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Room</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-in</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Checkout</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Nights</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
               {activeReservations.length > 0 ? (
                 activeReservations.map((reservation) => (
-                  <TableRow key={reservation.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        {reservation.customer?.full_name || 'Unknown'}
+                  <tr key={reservation.id} className="group hover:bg-slate-800/30 transition-all">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                          {reservation.customer?.full_name?.charAt(0) || '?'}
+                        </div>
+                        <span className="font-medium text-white">{reservation.customer?.full_name || 'Unknown'}</span>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                        {reservation.room?.room_number || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-slate-300">
+                        <Building2 className="w-4 h-4 text-slate-500" />
+                        Room {reservation.room?.room_number || 'N/A'}
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-6 py-4 text-slate-300">
                       {new Date(reservation.check_in_date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-6 py-4 text-slate-300">
                       {reservation.expected_check_out_date
                         ? new Date(reservation.expected_check_out_date).toLocaleDateString()
                         : 'Not set'}
-                    </TableCell>
-                    <TableCell>
-                      {reservation.expected_check_out_date
-                        ? calculateNights(reservation.check_in_date, reservation.expected_check_out_date)
-                        : '-'}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(reservation.status)}</TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-sm text-slate-300">
+                        {reservation.expected_check_out_date
+                          ? calculateNights(reservation.check_in_date, reservation.expected_check_out_date)
+                          : '-'} nights
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">{getStatusBadge(reservation.status)}</td>
+                    <td className="px-6 py-4">
                       <div className="flex gap-2">
                         {!isCheckedIn(reservation) && canCheckInToday(reservation.check_in_date, reservation.expected_check_out_date) ? (
                           <>
-                            <Button
-                              variant="default"
-                              size="sm"
+                            <button
                               onClick={() => handleCheckin(reservation.id)}
+                              className="px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-sm font-medium text-green-400 hover:bg-green-500/30 transition-all flex items-center gap-1.5"
                             >
+                              <LogIn className="w-4 h-4" />
                               Check In
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            </button>
+                            <button
                               onClick={() => handleCancel(reservation.id)}
+                              className="px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/30 transition-all flex items-center gap-1.5"
                             >
-                              Cancel
-                            </Button>
+                              <X className="w-4 h-4" />
+                            </button>
                           </>
                         ) : isCheckedIn(reservation) ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <button
                             onClick={() => handleCheckout(reservation.id)}
+                            className="px-3 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-sm font-medium text-blue-400 hover:bg-blue-500/30 transition-all flex items-center gap-1.5"
                           >
+                            <LogOut className="w-4 h-4" />
                             Checkout
-                          </Button>
+                          </button>
                         ) : (
                           <>
-                            <span className="text-sm text-muted-foreground">Future booking</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            <span className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-500 flex items-center gap-1.5">
+                              <Clock className="w-4 h-4" />
+                              Future
+                            </span>
+                            <button
                               onClick={() => handleCancel(reservation.id)}
+                              className="px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/30 transition-all flex items-center gap-1.5"
                             >
-                              Cancel
-                            </Button>
+                              <X className="w-4 h-4" />
+                            </button>
                           </>
                         )}
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/customers/${reservation.customer_id}`)}>
-                          <Receipt className="h-4 w-4" />
-                        </Button>
+                        <button
+                          onClick={() => navigate(`/customers/${reservation.customer_id}`)}
+                          className="px-3 py-2 bg-slate-800 border border-purple-500/30 rounded-lg text-sm font-medium text-purple-400 hover:bg-slate-700 transition-all"
+                        >
+                          <Receipt className="w-4 h-4" />
+                        </button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    No active reservations
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <Calendar className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                    <p className="text-slate-500">No active reservations</p>
+                  </td>
+                </tr>
               )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* Completed Reservations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Completed Reservations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Room</TableHead>
-                <TableHead>Check-in</TableHead>
-                <TableHead>Check-out</TableHead>
-                <TableHead>Nights</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      <div className="glass-card fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-slate-500/10 rounded-lg">
+            <Calendar className="w-5 h-5 text-slate-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-white">Recent Completed</h2>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-700">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Room</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-in</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-out</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Nights</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
               {completedReservations.length > 0 ? (
                 completedReservations.slice(0, 5).map((reservation) => (
-                  <TableRow key={reservation.id}>
-                    <TableCell className="font-medium">
-                      {reservation.customer?.full_name || 'Unknown'}
-                    </TableCell>
-                    <TableCell>{reservation.room?.room_number || 'N/A'}</TableCell>
-                    <TableCell>
+                  <tr key={reservation.id} className="group hover:bg-slate-800/30 transition-all">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center text-white font-semibold">
+                          {reservation.customer?.full_name?.charAt(0) || '?'}
+                        </div>
+                        <span className="font-medium text-slate-300">{reservation.customer?.full_name || 'Unknown'}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-slate-400">Room {reservation.room?.room_number || 'N/A'}</td>
+                    <td className="px-6 py-4 text-slate-400">
                       {new Date(reservation.check_in_date).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-6 py-4 text-slate-400">
                       {reservation.actual_check_out_date
                         ? new Date(reservation.actual_check_out_date).toLocaleDateString()
                         : 'Not set'}
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-6 py-4 text-slate-400">
                       {reservation.actual_check_out_date
                         ? calculateNights(reservation.check_in_date, reservation.actual_check_out_date)
                         : '-'}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(reservation.status)}</TableCell>
-                  </TableRow>
+                    </td>
+                    <td className="px-6 py-4">{getStatusBadge(reservation.status)}</td>
+                  </tr>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    No completed reservations
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <Calendar className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                    <p className="text-slate-500">No completed reservations</p>
+                  </td>
+                </tr>
               )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }

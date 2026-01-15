@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Phone, MapPin } from 'lucide-react'
-import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
-import { Card, CardContent, CardHeader } from '../../components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
+import { Plus, Search, Phone, MapPin, Users, ArrowRight } from 'lucide-react'
 import CustomerForm from '../../components/customers/CustomerForm'
 import { customerService } from '@/services'
 import type { Customer } from '@/types'
@@ -52,22 +48,32 @@ export default function CustomerList() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-muted-foreground">Loading customers...</div>
+        <div className="spinner" />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Page Header */}
+      <div className="flex items-center justify-between slide-in-left">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
-          <p className="text-muted-foreground">Manage your lodge customers</p>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-4xl font-bold gradient-text">Customers</h1>
+            <div className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full">
+              <span className="text-sm font-semibold text-purple-400">{customers.length} Total</span>
+            </div>
+          </div>
+          <p className="text-slate-400">Manage your lodge customers</p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Customer
-        </Button>
+        <button
+          onClick={() => setIsFormOpen(true)}
+          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 relative overflow-hidden group"
+        >
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000" />
+          <Plus className="w-5 h-5 relative z-10" />
+          <span className="relative z-10">Add Customer</span>
+        </button>
       </div>
 
       <CustomerForm
@@ -76,74 +82,90 @@ export default function CustomerList() {
         onSubmit={handleAddCustomer}
       />
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by name or phone..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+      {/* Search & Table Card */}
+      <div className="glass-card fade-in" style={{ animationDelay: '0.1s', opacity: 0 }}>
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search by name or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead>ID Proof</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-700">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Phone</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Address</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">ID Proof</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
               {filteredCustomers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    No customers found
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center">
+                    <Users className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                    <p className="text-slate-500">No customers found</p>
+                  </td>
+                </tr>
               ) : (
                 filteredCustomers.map((customer) => (
-                  <TableRow
+                  <tr
                     key={customer.id}
-                    className="cursor-pointer"
                     onClick={() => navigate(`/customers/${customer.id}`)}
+                    className="group hover:bg-slate-800/30 transition-all cursor-pointer"
                   >
-                    <TableCell className="font-medium">{customer.full_name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                          {customer.full_name.charAt(0)}
+                        </div>
+                        <span className="font-medium text-white group-hover:text-purple-300 transition-colors">
+                          {customer.full_name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-slate-300">
+                        <Phone className="w-4 h-4 text-slate-500" />
                         {customer.phone}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-slate-300 max-w-xs truncate">
+                        <MapPin className="w-4 h-4 text-slate-500 flex-shrink-0" />
                         {customer.address}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div className="font-medium">{customer.id_proof_type}</div>
-                        <div className="text-muted-foreground">{customer.id_proof_number}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="text-sm font-medium text-slate-300">{customer.id_proof_type}</p>
+                        <p className="text-xs text-slate-500">{customer.id_proof_number}</p>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">View Details</Button>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button className="px-4 py-2 bg-slate-800 border border-purple-500/30 rounded-lg text-sm font-medium text-purple-400 hover:bg-slate-700 hover:border-purple-500/50 transition-all flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-purple-500/10">
+                        View
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+                    </td>
+                  </tr>
                 ))
               )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }

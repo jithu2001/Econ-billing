@@ -9,6 +9,7 @@ export interface RegisterRequest {
   username: string;
   password: string;
   role: 'ADMIN' | 'STAFF';
+  registration_token: string;
 }
 
 export interface AuthResponse {

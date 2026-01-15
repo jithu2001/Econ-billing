@@ -1,26 +1,28 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Receipt, Calendar, Filter, Search } from 'lucide-react'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
-import { Input } from '../../components/ui/input'
-import { Select } from '../../components/ui/select'
-import { Label } from '../../components/ui/label'
+import { Receipt, Calendar, Filter, Search, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X } from 'lucide-react'
 import { billService, customerService } from '@/services'
 import type { Bill, Customer } from '@/types'
 import { handleApiError } from '@/lib/api'
 
 const getStatusBadge = (status: Bill['status']) => {
-  const colors = {
-    DRAFT: 'bg-gray-100 text-gray-800',
-    FINALIZED: 'bg-blue-100 text-blue-800',
-    PAID: 'bg-green-100 text-green-800',
-    UNPAID: 'bg-red-100 text-red-800',
+  const styles = {
+    DRAFT: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+    FINALIZED: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    PAID: 'bg-green-500/20 text-green-400 border-green-500/30',
+    UNPAID: 'bg-red-500/20 text-red-400 border-red-500/30',
+  }
+
+  const dots = {
+    DRAFT: 'bg-slate-400',
+    FINALIZED: 'bg-blue-400',
+    PAID: 'bg-green-400 animate-pulse',
+    UNPAID: 'bg-red-400',
   }
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colors[status]}`}>
+    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold border ${styles[status]}`}>
+      <div className={`w-2 h-2 rounded-full ${dots[status]}`} />
       {status}
     </span>
   )
@@ -123,220 +125,267 @@ export default function BillList() {
     pendingRevenue: bills.filter(b => b.status === 'UNPAID' || b.status === 'FINALIZED').reduce((sum, b) => sum + b.total_amount, 0),
   }
 
+  const statCards = [
+    { label: 'Total Bills', value: stats.total, icon: Receipt, color: 'purple' },
+    { label: 'Paid', value: stats.paid, icon: CheckCircle, color: 'green' },
+    { label: 'Unpaid', value: stats.unpaid, icon: Clock, color: 'red' },
+    { label: 'Draft', value: stats.draft, icon: FileText, color: 'slate' },
+    { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'green' },
+    { label: 'Pending', value: `₹${stats.pendingRevenue.toLocaleString()}`, icon: DollarSign, color: 'amber' },
+  ]
+
+  const colorClasses = {
+    purple: { bg: 'bg-purple-500/10', text: 'text-purple-400', shadow: 'group-hover:shadow-purple-500/30' },
+    green: { bg: 'bg-green-500/10', text: 'text-green-400', shadow: 'group-hover:shadow-green-500/30' },
+    red: { bg: 'bg-red-500/10', text: 'text-red-400', shadow: 'group-hover:shadow-red-500/30' },
+    slate: { bg: 'bg-slate-500/10', text: 'text-slate-400', shadow: 'group-hover:shadow-slate-500/30' },
+    amber: { bg: 'bg-amber-500/10', text: 'text-amber-400', shadow: 'group-hover:shadow-amber-500/30' },
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-muted-foreground">Loading bills...</div>
+        <div className="spinner" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Bills</h1>
-        <p className="text-muted-foreground">Manage and track all billing records</p>
+    <div className="space-y-6 fade-in">
+      {/* Page Header */}
+      <div className="slide-in-left">
+        <h1 className="text-3xl font-bold gradient-text mb-2">Bills</h1>
+        <p className="text-slate-400">Manage and track all billing records</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Bills</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
+        {statCards.map((stat, idx) => {
+          const Icon = stat.icon
+          const colors = colorClasses[stat.color as keyof typeof colorClasses]
+          return (
+            <div
+              key={stat.label}
+              className="glass-card p-4 fade-in group relative overflow-hidden rounded-xl"
+              style={{ animationDelay: `${idx * 0.1}s`, opacity: 0 }}
+            >
+              {/* Hover gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500" />
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Paid</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Unpaid</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.unpaid}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Draft</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-600">{stats.draft}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">₹{stats.pendingRevenue.toLocaleString()}</div>
-          </CardContent>
-        </Card>
+              <div className="relative z-10">
+                <div className={`p-2 ${colors.bg} rounded-lg inline-block mb-3 ${colors.shadow} transition-all`}>
+                  <Icon className={`w-5 h-5 ${colors.text}`} />
+                </div>
+                <p className="text-xs font-medium text-slate-400 mb-1">{stat.label}</p>
+                <p className={`text-xl font-bold ${colors.text}`}>{stat.value}</p>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-            <div>
-              <Label htmlFor="search">Search Customer</Label>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Customer name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
+      <div className="glass-card p-6 rounded-xl fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="h-5 w-5 text-purple-400" />
+          <h2 className="text-lg font-semibold text-slate-200">Filters</h2>
+        </div>
 
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select
-                id="status"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="ALL">All Status</option>
-                <option value="PAID">Paid</option>
-                <option value="UNPAID">Unpaid</option>
-                <option value="FINALIZED">Finalized</option>
-                <option value="DRAFT">Draft</option>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="dateFrom">From Date</Label>
-              <Input
-                id="dateFrom"
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          {/* Search */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Search Customer
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Customer name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
               />
-            </div>
-
-            <div>
-              <Label htmlFor="dateTo">To Date</Label>
-              <Input
-                id="dateTo"
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-              />
-            </div>
-
-            <div className="flex items-end">
-              <Button variant="outline" onClick={clearFilters} className="w-full">
-                Clear Filters
-              </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Status
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none cursor-pointer"
+            >
+              <option value="ALL">All Status</option>
+              <option value="PAID">Paid</option>
+              <option value="UNPAID">Unpaid</option>
+              <option value="FINALIZED">Finalized</option>
+              <option value="DRAFT">Draft</option>
+            </select>
+          </div>
+
+          {/* Date From */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              From Date
+            </label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+            />
+          </div>
+
+          {/* Date To */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              To Date
+            </label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+            />
+          </div>
+
+          {/* Clear Button */}
+          <div className="flex items-end">
+            <button
+              onClick={clearFilters}
+              className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl font-medium text-slate-300 hover:bg-slate-700 hover:border-purple-500/30 transition-all flex items-center justify-center gap-2"
+            >
+              <X className="w-4 h-4" />
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Bills Table */}
-      <Card>
-        <CardHeader>
+      <div className="glass-card rounded-xl overflow-hidden fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
+        <div className="p-6 border-b border-slate-700/50">
           <div className="flex items-center justify-between">
-            <CardTitle>All Bills ({filteredBills.length})</CardTitle>
+            <h2 className="text-lg font-semibold text-slate-200">
+              All Bills
+              <span className="ml-2 px-2.5 py-1 bg-purple-500/20 text-purple-400 text-sm rounded-full">
+                {filteredBills.length}
+              </span>
+            </h2>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Bill Date</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Bill Type</TableHead>
-                <TableHead>Subtotal</TableHead>
-                <TableHead>Tax</TableHead>
-                <TableHead>Discount</TableHead>
-                <TableHead>Total Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-700/50">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Bill Date
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Customer
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Bill Type
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Subtotal
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Tax
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Discount
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Total
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/50">
               {filteredBills.length > 0 ? (
-                filteredBills.map((bill) => (
-                  <TableRow
+                filteredBills.map((bill, idx) => (
+                  <tr
                     key={bill.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="group hover:bg-slate-800/30 transition-all cursor-pointer"
                     onClick={() => navigate(`/customers/${bill.customer_id}`)}
+                    style={{ animationDelay: `${idx * 0.05}s` }}
                   >
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-slate-300 group-hover:text-white transition-colors">
+                        <Calendar className="h-4 w-4 text-purple-400" />
                         {new Date(bill.bill_date).toLocaleDateString()}
                       </div>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {bill.customer?.full_name || 'Unknown'}
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{bill.bill_type}</span>
-                    </TableCell>
-                    <TableCell>₹{bill.subtotal.toLocaleString()}</TableCell>
-                    <TableCell>₹{bill.tax_amount.toLocaleString()}</TableCell>
-                    <TableCell>₹{bill.discount_amount.toLocaleString()}</TableCell>
-                    <TableCell className="font-semibold">
-                      ₹{bill.total_amount.toLocaleString()}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(bill.status)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
+                          {bill.customer?.full_name?.charAt(0) || '?'}
+                        </div>
+                        <span className="font-medium text-slate-200 group-hover:text-white transition-colors">
+                          {bill.customer?.full_name || 'Unknown'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2.5 py-1 bg-slate-700/50 text-slate-300 text-sm rounded-lg">
+                        {bill.bill_type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-300">
+                      ₹{bill.subtotal.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-slate-400">
+                      ₹{bill.tax_amount.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-slate-400">
+                      ₹{bill.discount_amount.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-semibold text-white">
+                        ₹{bill.total_amount.toLocaleString()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {getStatusBadge(bill.status)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
                         onClick={(e) => {
                           e.stopPropagation()
                           navigate(`/customers/${bill.customer_id}`)
                         }}
+                        className="p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg text-purple-400 hover:bg-purple-500/20 hover:shadow-lg hover:shadow-purple-500/20 transition-all"
                       >
                         <Receipt className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                      </button>
+                    </td>
+                  </tr>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground">
-                    No bills found
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={9} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <Receipt className="w-12 h-12 text-slate-600" />
+                      <p className="text-slate-400">No bills found</p>
+                    </div>
+                  </td>
+                </tr>
               )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }

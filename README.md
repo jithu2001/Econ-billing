@@ -154,6 +154,9 @@ DATABASE_PATH=./trinity.db
 # JWT Secret (change this to a secure random string)
 JWT_SECRET=your-super-secret-jwt-key-change-this
 
+# Registration Token (required for creating new accounts)
+REGISTRATION_TOKEN=919847073856
+
 # CORS Origins (comma-separated)
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174,http://localhost:5175
 ```
@@ -161,6 +164,7 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174,http://localhost:517
 **⚠️ Security Note**:
 - Never commit the `.env` file to version control
 - Always use a strong, random JWT_SECRET in production
+- Change the REGISTRATION_TOKEN to a secure value - only users with this token can create accounts
 - Change default credentials after first login
 
 ### Frontend Configuration
@@ -333,9 +337,12 @@ Content-Type: application/json
 {
   "username": "admin",
   "password": "password123",
-  "role": "ADMIN"
+  "role": "ADMIN",
+  "registration_token": "919847073856"
 }
 ```
+
+**Note**: Registration requires a valid registration token (configured in `.env`). Only users with the correct token can create accounts. See [REGISTRATION_TOKEN.md](REGISTRATION_TOKEN.md) for details.
 
 #### Login
 ```http
@@ -567,6 +574,7 @@ npm test
 | `SERVER_PORT` | Backend server port | `8080` |
 | `DATABASE_PATH` | SQLite database file path | `./trinity.db` |
 | `JWT_SECRET` | Secret key for JWT tokens | (required) |
+| `REGISTRATION_TOKEN` | Token required for user registration | `919847073856` |
 | `ALLOWED_ORIGINS` | CORS allowed origins | `http://localhost:5173` |
 
 ### Frontend (.env)

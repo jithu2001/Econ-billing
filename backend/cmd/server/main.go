@@ -37,7 +37,7 @@ func main() {
 
 	// Initialize handlers
 	h := &routes.Handlers{
-		Auth:        handlers.NewAuthHandler(authService),
+		Auth:        handlers.NewAuthHandler(authService, cfg),
 		Customer:    handlers.NewCustomerHandler(customerService),
 		Room:        handlers.NewRoomHandler(roomService),
 		Reservation: handlers.NewReservationHandler(reservationService),

@@ -39,16 +39,16 @@ func (s *AuthService) Login(username, password string) (string, *models.User, er
 	return token, user, nil
 }
 
-func (s *AuthService) Register(username, password string, role models.UserRole) (*models.User, error) {
+func (s *AuthService) Register(username, password string, role models.UserRole) (string, *models.User, error) {
 	// Check if user already exists
 	existing, _ := s.userRepo.FindByUsername(username)
 	if existing != nil {
-		return nil, errors.New("username already exists")
+		return "", nil, errors.New("username already exists")
 	}
 
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
 	user := &models.User{
@@ -60,10 +60,16 @@ func (s *AuthService) Register(username, password string, role models.UserRole) 
 
 	err = s.userRepo.Create(user)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
-	return user, nil
+	// Generate token for auto-login after registration
+	token, err := utils.GenerateToken(user.ID, user.Username, string(user.Role), s.jwtSecret)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return token, user, nil
 }
 
 func (s *AuthService) GetUserByID(id uuid.UUID) (*models.User, error) {
