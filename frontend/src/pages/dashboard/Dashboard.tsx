@@ -219,7 +219,7 @@ export default function Dashboard() {
 
           <div className="space-y-3">
             {recentReservations.length > 0 ? (
-              recentReservations.map((reservation, idx) => (
+              recentReservations.map((reservation) => (
                 <div
                   key={reservation.id}
                   className="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl hover:bg-slate-800/50 hover:-translate-y-0.5 transition-all cursor-pointer border border-transparent hover:border-purple-500/20"

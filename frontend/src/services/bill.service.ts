@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api';
-import type { Bill, BillLineItem, Payment } from '@/types';
+import type { Bill, Payment } from '@/types';
 
 export interface CreateBillRequest {
   customer_id: string;

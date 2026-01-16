@@ -1,0 +1,43 @@
+{
+  "name": "econ",
+  "version": "1.0.0",
+  "description": "Econ - Lodge Management Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win --x64"
+  },
+  "author": "Econ",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0"
+  },
+  "build": {
+    "appId": "com.econ.lodge",
+    "productName": "Econ",
+    "directories": {
+      "output": "../bin/desktop"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "backend/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "backend/econ.exe",
+        "to": "backend/econ.exe"
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icon.ico",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "Econ.exe"
+    }
+  }
+}

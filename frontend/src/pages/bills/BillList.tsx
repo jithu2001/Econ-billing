@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Receipt, Calendar, Filter, Search, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X } from 'lucide-react'
 import { billService, customerService } from '@/services'
-import type { Bill, Customer } from '@/types'
+import type { Bill } from '@/types'
 import { handleApiError } from '@/lib/api'
 
 const getStatusBadge = (status: Bill['status']) => {
@@ -32,7 +32,6 @@ export default function BillList() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [bills, setBills] = useState<Bill[]>([])
-  const [customers, setCustomers] = useState<Customer[]>([])
   const [filteredBills, setFilteredBills] = useState<Bill[]>([])
 
   // Filter states
@@ -54,7 +53,6 @@ export default function BillList() {
       setLoading(true)
       // Fetch customers first
       const customersData = await customerService.getAll()
-      setCustomers(customersData)
 
       // Fetch bills for all customers
       const allBills: Bill[] = []

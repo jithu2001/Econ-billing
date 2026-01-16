@@ -163,7 +163,7 @@ export default function CustomerDetails() {
     { id: 'payments', label: 'Payments' },
   ]
 
-  const getStatusBadge = (status: string, type: 'reservation' | 'bill') => {
+  const getStatusBadge = (status: string, _type: 'reservation' | 'bill') => {
     const styles: Record<string, string> = {
       // Reservation statuses
       CONFIRMED: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
