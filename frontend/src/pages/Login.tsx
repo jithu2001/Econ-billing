@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '@/services/auth.service'
 import { handleApiError } from '@/lib/api'
-import { Building2, Sparkles } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -63,37 +63,27 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center animated-bg relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl float" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl float" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl float" style={{ animationDelay: '2s' }} />
-      </div>
-
-      <div className="max-w-md w-full mx-4 relative z-10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full mx-4">
         {/* Logo Section */}
-        <div className="text-center mb-8 fade-in">
+        <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="relative">
-              <Building2 className="w-16 h-16 text-purple-400 drop-shadow-[0_0_15px_rgba(167,139,250,0.6)]" />
-              <Sparkles className="w-6 h-6 text-pink-400 absolute -top-1 -right-1 animate-pulse" />
-            </div>
+            <Building2 className="w-16 h-16 text-gray-900" />
           </div>
-          <h1 className="text-5xl font-bold gradient-text mb-2">Trinity Lodge</h1>
-          <p className="text-slate-400 text-sm">Next-Generation Hotel Management</p>
+          <h1 className="text-5xl font-bold text-gray-900 mb-2">Econ</h1>
+          <p className="text-gray-500 text-sm">Lodge Management System</p>
         </div>
 
         {/* Login/Signup Card */}
-        <div className="glass-card fade-in-scale p-8 relative overflow-hidden">
-          {/* Top gradient line */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500" />
+        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+          {/* Top border accent */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gray-900 rounded-t-xl" />
 
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
               {isSignUp ? 'Create Account' : 'Welcome Back'}
             </h2>
-            <p className="text-slate-400 text-sm">
+            <p className="text-gray-500 text-sm">
               {isSignUp ? 'Sign up to get started' : 'Sign in to continue'}
             </p>
           </div>
@@ -101,9 +91,9 @@ export default function Login() {
           <form className="space-y-5" onSubmit={handleSubmit}>
             {/* Error Message */}
             {error && (
-              <div className="slide-in-left bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                <div className="text-sm text-red-400 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-red-400 rounded-full" />
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div className="text-sm text-red-600 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full" />
                   {error}
                 </div>
               </div>
@@ -111,9 +101,9 @@ export default function Login() {
 
             {/* Success Message */}
             {success && (
-              <div className="slide-in-left bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                <div className="text-sm text-green-400 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="text-sm text-green-600 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
                   {success}
                 </div>
               </div>
@@ -121,7 +111,7 @@ export default function Login() {
 
             {/* Username Field */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-600 mb-2">
                 Username
               </label>
               <input
@@ -131,14 +121,14 @@ export default function Login() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:bg-slate-800/70 transition-all duration-300 outline-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none"
                 placeholder="Enter your username"
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-2">
                 Password
               </label>
               <input
@@ -148,17 +138,17 @@ export default function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:bg-slate-800/70 transition-all duration-300 outline-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none"
                 placeholder="Enter your password"
               />
             </div>
 
             {/* Sign Up Additional Fields */}
             {isSignUp && (
-              <div className="space-y-5 fade-in">
+              <div className="space-y-5">
                 {/* Confirm Password */}
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-600 mb-2">
                     Confirm Password
                   </label>
                   <input
@@ -168,14 +158,14 @@ export default function Login() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:bg-slate-800/70 transition-all duration-300 outline-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none"
                     placeholder="Confirm your password"
                   />
                 </div>
 
                 {/* Role Selection */}
                 <div>
-                  <label htmlFor="role" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="role" className="block text-sm font-medium text-gray-600 mb-2">
                     Role
                   </label>
                   <select
@@ -183,7 +173,7 @@ export default function Login() {
                     name="role"
                     value={role}
                     onChange={(e) => setRole(e.target.value as 'ADMIN' | 'STAFF')}
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 outline-none cursor-pointer"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none cursor-pointer"
                   >
                     <option value="STAFF">Staff</option>
                     <option value="ADMIN">Admin</option>
@@ -192,7 +182,7 @@ export default function Login() {
 
                 {/* Registration Token */}
                 <div>
-                  <label htmlFor="registrationToken" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="registrationToken" className="block text-sm font-medium text-gray-600 mb-2">
                     Registration Token
                   </label>
                   <input
@@ -203,9 +193,9 @@ export default function Login() {
                     value={registrationToken}
                     onChange={(e) => setRegistrationToken(e.target.value)}
                     placeholder="Enter registration token"
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:bg-slate-800/70 transition-all duration-300 outline-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none"
                   />
-                  <p className="text-xs text-slate-500 mt-2">Required security token provided by administrator</p>
+                  <p className="text-xs text-gray-500 mt-2">Required security token provided by administrator</p>
                 </div>
               </div>
             )}
@@ -214,12 +204,9 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group"
+              className="w-full py-3 px-6 bg-gray-900 rounded-xl font-semibold text-white hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {/* Shimmer effect */}
-              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000" />
-
-              <span className="relative flex items-center justify-center gap-2">
+              <span className="flex items-center justify-center gap-2">
                 {isLoading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -236,17 +223,17 @@ export default function Login() {
               <button
                 type="button"
                 onClick={toggleMode}
-                className="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-200 font-medium"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
               >
-                {isSignUp ? '← Already have an account? Sign in' : "Don't have an account? Sign up →"}
+                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
               </button>
             </div>
           </form>
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6 fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
-          <p className="text-slate-500 text-sm">
+        <div className="text-center mt-6">
+          <p className="text-gray-400 text-sm">
             Powered by Trinity Lodge Management System
           </p>
         </div>

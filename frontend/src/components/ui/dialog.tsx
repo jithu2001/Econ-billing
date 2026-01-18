@@ -12,12 +12,12 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="fixed inset-0 bg-black/50"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => onOpenChange(false)}
       />
-      <div className="relative z-50 max-h-[90vh] w-full max-w-lg overflow-y-auto">
+      <div className="relative z-50 max-h-[85vh] w-full max-w-lg overflow-y-auto my-auto">
         {children}
       </div>
     </div>
@@ -31,7 +31,7 @@ export const DialogContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "relative bg-background rounded-lg shadow-lg p-6",
+      "relative bg-white rounded-xl shadow-xl p-6 border border-gray-200",
       className
     )}
     {...props}
@@ -59,7 +59,7 @@ export const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+    className={cn("text-lg font-semibold leading-none tracking-tight text-gray-900", className)}
     {...props}
   />
 ))
@@ -71,7 +71,7 @@ export const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-gray-500", className)}
     {...props}
   />
 ))
@@ -96,7 +96,7 @@ export const DialogClose = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none",
+      "absolute right-4 top-4 rounded-lg p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors",
       className
     )}
     onClick={onClose}

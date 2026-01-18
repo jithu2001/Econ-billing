@@ -56,23 +56,22 @@ export default function CustomerList() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between slide-in-left">
+      <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl font-bold gradient-text">Customers</h1>
-            <div className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full">
-              <span className="text-sm font-semibold text-purple-400">{customers.length} Total</span>
-            </div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
+            <span className="px-3 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-600">
+              {customers.length} Total
+            </span>
           </div>
-          <p className="text-slate-400">Manage your lodge customers</p>
+          <p className="text-gray-500">Manage your lodge customers</p>
         </div>
         <button
           onClick={() => setIsFormOpen(true)}
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 relative overflow-hidden group"
+          className="px-5 py-2.5 bg-gray-900 rounded-lg font-medium text-white hover:bg-gray-800 transition-colors flex items-center gap-2"
         >
-          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000" />
-          <Plus className="w-5 h-5 relative z-10" />
-          <span className="relative z-10">Add Customer</span>
+          <Plus className="w-4 h-4" />
+          Add Customer
         </button>
       </div>
 
@@ -83,17 +82,17 @@ export default function CustomerList() {
       />
 
       {/* Search & Table Card */}
-      <div className="glass-card fade-in" style={{ animationDelay: '0.1s', opacity: 0 }}>
+      <div className="card">
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-5">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search by name or phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-gray-300 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
             />
           </div>
         </div>
@@ -102,20 +101,20 @@ export default function CustomerList() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-700">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Phone</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Address</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">ID Proof</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Action</th>
+              <tr className="border-b border-gray-200">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Address</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID Proof</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-gray-100">
               {filteredCustomers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
-                    <Users className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                    <p className="text-slate-500">No customers found</p>
+                  <td colSpan={5} className="px-4 py-12 text-center">
+                    <Users className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                    <p className="text-gray-500">No customers found</p>
                   </td>
                 </tr>
               ) : (
@@ -123,40 +122,40 @@ export default function CustomerList() {
                   <tr
                     key={customer.id}
                     onClick={() => navigate(`/customers/${customer.id}`)}
-                    className="group hover:bg-slate-800/30 transition-all cursor-pointer"
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                        <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center text-white font-medium text-sm">
                           {customer.full_name.charAt(0)}
                         </div>
-                        <span className="font-medium text-white group-hover:text-purple-300 transition-colors">
+                        <span className="font-medium text-gray-900">
                           {customer.full_name}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <Phone className="w-4 h-4 text-slate-500" />
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Phone className="w-4 h-4 text-gray-400" />
                         {customer.phone}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-300 max-w-xs truncate">
-                        <MapPin className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2 text-gray-600 max-w-xs truncate">
+                        <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         {customer.address}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div>
-                        <p className="text-sm font-medium text-slate-300">{customer.id_proof_type}</p>
-                        <p className="text-xs text-slate-500">{customer.id_proof_number}</p>
+                        <p className="text-sm font-medium text-gray-900">{customer.id_proof_type}</p>
+                        <p className="text-xs text-gray-500">{customer.id_proof_number}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <button className="px-4 py-2 bg-slate-800 border border-purple-500/30 rounded-lg text-sm font-medium text-purple-400 hover:bg-slate-700 hover:border-purple-500/50 transition-all flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-purple-500/10">
+                    <td className="px-4 py-3">
+                      <button className="px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors flex items-center gap-1">
                         View
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                        <ArrowRight className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>

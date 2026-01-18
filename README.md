@@ -68,21 +68,32 @@ Run it and open http://localhost:8080 in your browser.
 
 ### Option 2: Build Desktop Application (Recommended)
 
+Run all commands from the project root (`d:\Trinity`):
+
 1. Build the backend:
    ```powershell
    ./build.ps1
    ```
 
-2. Copy to desktop folder:
+2. Copy backend to desktop folder:
    ```powershell
    Copy-Item "bin/econ.exe" "desktop/backend/econ.exe"
    ```
 
-3. Build Electron app:
-   ```bash
+3. Install Electron dependencies (from project root):
+   ```powershell
    cd desktop
    npm install
+   ```
+
+4. Build Electron app:
+   ```powershell
    npm run build:win
+   ```
+
+5. Return to project root:
+   ```powershell
+   cd ..
    ```
 
 Output: `bin/desktop/Econ.exe` - Portable desktop application

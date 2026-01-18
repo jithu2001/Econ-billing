@@ -7,17 +7,17 @@ import { handleApiError } from '@/lib/api'
 
 const getStatusBadge = (status: Bill['status']) => {
   const styles = {
-    DRAFT: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-    FINALIZED: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    PAID: 'bg-green-500/20 text-green-400 border-green-500/30',
-    UNPAID: 'bg-red-500/20 text-red-400 border-red-500/30',
+    DRAFT: 'bg-gray-50 text-gray-600 border-gray-200',
+    FINALIZED: 'bg-blue-50 text-blue-600 border-blue-200',
+    PAID: 'bg-green-50 text-green-600 border-green-200',
+    UNPAID: 'bg-red-50 text-red-600 border-red-200',
   }
 
   const dots = {
-    DRAFT: 'bg-slate-400',
-    FINALIZED: 'bg-blue-400',
-    PAID: 'bg-green-400 animate-pulse',
-    UNPAID: 'bg-red-400',
+    DRAFT: 'bg-gray-500',
+    FINALIZED: 'bg-blue-500',
+    PAID: 'bg-green-500',
+    UNPAID: 'bg-red-500',
   }
 
   return (
@@ -124,20 +124,19 @@ export default function BillList() {
   }
 
   const statCards = [
-    { label: 'Total Bills', value: stats.total, icon: Receipt, color: 'purple' },
+    { label: 'Total Bills', value: stats.total, icon: Receipt, color: 'gray' },
     { label: 'Paid', value: stats.paid, icon: CheckCircle, color: 'green' },
     { label: 'Unpaid', value: stats.unpaid, icon: Clock, color: 'red' },
-    { label: 'Draft', value: stats.draft, icon: FileText, color: 'slate' },
-    { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'green' },
-    { label: 'Pending', value: `₹${stats.pendingRevenue.toLocaleString()}`, icon: DollarSign, color: 'amber' },
+    { label: 'Draft', value: stats.draft, icon: FileText, color: 'gray' },
+    { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'green' },
+    { label: 'Pending', value: `$${stats.pendingRevenue.toLocaleString()}`, icon: DollarSign, color: 'amber' },
   ]
 
   const colorClasses = {
-    purple: { bg: 'bg-purple-500/10', text: 'text-purple-400', shadow: 'group-hover:shadow-purple-500/30' },
-    green: { bg: 'bg-green-500/10', text: 'text-green-400', shadow: 'group-hover:shadow-green-500/30' },
-    red: { bg: 'bg-red-500/10', text: 'text-red-400', shadow: 'group-hover:shadow-red-500/30' },
-    slate: { bg: 'bg-slate-500/10', text: 'text-slate-400', shadow: 'group-hover:shadow-slate-500/30' },
-    amber: { bg: 'bg-amber-500/10', text: 'text-amber-400', shadow: 'group-hover:shadow-amber-500/30' },
+    gray: { bg: 'bg-gray-100', text: 'text-gray-600' },
+    green: { bg: 'bg-green-50', text: 'text-green-600' },
+    red: { bg: 'bg-red-50', text: 'text-red-600' },
+    amber: { bg: 'bg-amber-50', text: 'text-amber-600' },
   }
 
   if (loading) {
@@ -149,73 +148,67 @@ export default function BillList() {
   }
 
   return (
-    <div className="space-y-6 fade-in">
+    <div className="space-y-6 bg-gray-50 min-h-screen p-6">
       {/* Page Header */}
-      <div className="slide-in-left">
-        <h1 className="text-3xl font-bold gradient-text mb-2">Bills</h1>
-        <p className="text-slate-400">Manage and track all billing records</p>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Bills</h1>
+        <p className="text-gray-500">Manage and track all billing records</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        {statCards.map((stat, idx) => {
+        {statCards.map((stat) => {
           const Icon = stat.icon
           const colors = colorClasses[stat.color as keyof typeof colorClasses]
           return (
             <div
               key={stat.label}
-              className="glass-card p-4 fade-in group relative overflow-hidden rounded-xl"
-              style={{ animationDelay: `${idx * 0.1}s`, opacity: 0 }}
+              className="bg-white border border-gray-200 rounded-xl p-4"
             >
-              {/* Hover gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500" />
-
-              <div className="relative z-10">
-                <div className={`p-2 ${colors.bg} rounded-lg inline-block mb-3 ${colors.shadow} transition-all`}>
-                  <Icon className={`w-5 h-5 ${colors.text}`} />
-                </div>
-                <p className="text-xs font-medium text-slate-400 mb-1">{stat.label}</p>
-                <p className={`text-xl font-bold ${colors.text}`}>{stat.value}</p>
+              <div className={`p-2 ${colors.bg} rounded-lg inline-block mb-3`}>
+                <Icon className={`w-5 h-5 ${colors.text}`} />
               </div>
+              <p className="text-xs font-medium text-gray-500 mb-1">{stat.label}</p>
+              <p className={`text-xl font-bold ${colors.text}`}>{stat.value}</p>
             </div>
           )
         })}
       </div>
 
       {/* Filters */}
-      <div className="glass-card p-6 rounded-xl fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-5 w-5 text-purple-400" />
-          <h2 className="text-lg font-semibold text-slate-200">Filters</h2>
+          <Filter className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               Search Customer
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Customer name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
               />
             </div>
           </div>
 
           {/* Status */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               Status
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none cursor-pointer"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none cursor-pointer"
             >
               <option value="ALL">All Status</option>
               <option value="PAID">Paid</option>
@@ -227,27 +220,27 @@ export default function BillList() {
 
           {/* Date From */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               From Date
             </label>
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
             />
           </div>
 
           {/* Date To */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               To Date
             </label>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
             />
           </div>
 
@@ -255,7 +248,7 @@ export default function BillList() {
           <div className="flex items-end">
             <button
               onClick={clearFilters}
-              className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl font-medium text-slate-300 hover:bg-slate-700 hover:border-purple-500/30 transition-all flex items-center justify-center gap-2"
+              className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
             >
               <X className="w-4 h-4" />
               Clear Filters
@@ -265,12 +258,12 @@ export default function BillList() {
       </div>
 
       {/* Bills Table */}
-      <div className="glass-card rounded-xl overflow-hidden fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
-        <div className="p-6 border-b border-slate-700/50">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-200">
+            <h2 className="text-lg font-semibold text-gray-900">
               All Bills
-              <span className="ml-2 px-2.5 py-1 bg-purple-500/20 text-purple-400 text-sm rounded-full">
+              <span className="ml-2 px-2.5 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
                 {filteredBills.length}
               </span>
             </h2>
@@ -280,78 +273,77 @@ export default function BillList() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-700/50">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+              <tr className="border-b border-gray-200">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Bill Date
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Bill Type
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Subtotal
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Tax
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Discount
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Total
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
+            <tbody className="divide-y divide-gray-200">
               {filteredBills.length > 0 ? (
-                filteredBills.map((bill, idx) => (
+                filteredBills.map((bill) => (
                   <tr
                     key={bill.id}
-                    className="group hover:bg-slate-800/30 transition-all cursor-pointer"
+                    className="hover:bg-gray-50 transition-all cursor-pointer"
                     onClick={() => navigate(`/customers/${bill.customer_id}`)}
-                    style={{ animationDelay: `${idx * 0.05}s` }}
                   >
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-300 group-hover:text-white transition-colors">
-                        <Calendar className="h-4 w-4 text-purple-400" />
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="h-4 w-4 text-gray-400" />
                         {new Date(bill.bill_date).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
+                        <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-bold">
                           {bill.customer?.full_name?.charAt(0) || '?'}
                         </div>
-                        <span className="font-medium text-slate-200 group-hover:text-white transition-colors">
+                        <span className="font-medium text-gray-900">
                           {bill.customer?.full_name || 'Unknown'}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 bg-slate-700/50 text-slate-300 text-sm rounded-lg">
+                      <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-sm rounded-lg">
                         {bill.bill_type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-300">
-                      ₹{bill.subtotal.toLocaleString()}
+                    <td className="px-6 py-4 text-gray-600">
+                      ${bill.subtotal.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-slate-400">
-                      ₹{bill.tax_amount.toLocaleString()}
+                    <td className="px-6 py-4 text-gray-500">
+                      ${bill.tax_amount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-slate-400">
-                      ₹{bill.discount_amount.toLocaleString()}
+                    <td className="px-6 py-4 text-gray-500">
+                      ${bill.discount_amount.toLocaleString()}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-semibold text-white">
-                        ₹{bill.total_amount.toLocaleString()}
+                      <span className="font-semibold text-gray-900">
+                        ${bill.total_amount.toLocaleString()}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -363,7 +355,7 @@ export default function BillList() {
                           e.stopPropagation()
                           navigate(`/customers/${bill.customer_id}`)
                         }}
-                        className="p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg text-purple-400 hover:bg-purple-500/20 hover:shadow-lg hover:shadow-purple-500/20 transition-all"
+                        className="p-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-200 transition-all"
                       >
                         <Receipt className="h-4 w-4" />
                       </button>
@@ -374,8 +366,8 @@ export default function BillList() {
                 <tr>
                   <td colSpan={9} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-3">
-                      <Receipt className="w-12 h-12 text-slate-600" />
-                      <p className="text-slate-400">No bills found</p>
+                      <Receipt className="w-12 h-12 text-gray-300" />
+                      <p className="text-gray-500">No bills found</p>
                     </div>
                   </td>
                 </tr>

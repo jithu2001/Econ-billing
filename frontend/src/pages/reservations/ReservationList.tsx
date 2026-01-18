@@ -9,22 +9,22 @@ import { handleApiError } from '@/lib/api'
 const getStatusBadge = (status: Reservation['status']) => {
   const styles = {
     ACTIVE: {
-      bg: 'bg-green-500/20',
-      text: 'text-green-400',
-      border: 'border-green-500/30',
-      dot: 'bg-green-400'
+      bg: 'bg-green-50',
+      text: 'text-green-600',
+      border: 'border-green-200',
+      dot: 'bg-green-500'
     },
     COMPLETED: {
-      bg: 'bg-slate-500/20',
-      text: 'text-slate-400',
-      border: 'border-slate-500/30',
-      dot: 'bg-slate-400'
+      bg: 'bg-gray-50',
+      text: 'text-gray-600',
+      border: 'border-gray-200',
+      dot: 'bg-gray-500'
     },
     CANCELLED: {
-      bg: 'bg-red-500/20',
-      text: 'text-red-400',
-      border: 'border-red-500/30',
-      dot: 'bg-red-400'
+      bg: 'bg-red-50',
+      text: 'text-red-600',
+      border: 'border-red-200',
+      dot: 'bg-red-500'
     },
   }
 
@@ -32,7 +32,7 @@ const getStatusBadge = (status: Reservation['status']) => {
 
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${style.bg} ${style.text} ${style.border}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${style.dot} ${status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
       {status}
     </span>
   )
@@ -135,28 +135,27 @@ export default function ReservationList() {
   }
 
   const statCards = [
-    { label: 'Total Reservations', value: reservations.length, color: 'purple' },
+    { label: 'Total Reservations', value: reservations.length, color: 'gray' },
     { label: 'Active', value: activeReservations.length, color: 'green' },
-    { label: 'Completed', value: completedReservations.length, color: 'slate' },
+    { label: 'Completed', value: completedReservations.length, color: 'gray' },
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-50 min-h-screen p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between slide-in-left">
+      <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl font-bold gradient-text">Reservations</h1>
+            <h1 className="text-4xl font-bold text-gray-900">Reservations</h1>
           </div>
-          <p className="text-slate-400">Manage room bookings and check-ins</p>
+          <p className="text-gray-500">Manage room bookings and check-ins</p>
         </div>
         <button
           onClick={() => setIsReservationFormOpen(true)}
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 relative overflow-hidden group"
+          className="px-6 py-3 bg-gray-900 rounded-xl font-semibold text-white hover:bg-gray-800 transition-all duration-300 flex items-center gap-2"
         >
-          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000" />
-          <Plus className="w-5 h-5 relative z-10" />
-          <span className="relative z-10">New Reservation</span>
+          <Plus className="w-5 h-5" />
+          <span>New Reservation</span>
         </button>
       </div>
 
@@ -170,16 +169,14 @@ export default function ReservationList() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        {statCards.map((stat, idx) => (
+        {statCards.map((stat) => (
           <div
             key={stat.label}
-            className="glass-card fade-in"
-            style={{ animationDelay: `${idx * 0.1}s`, opacity: 0 }}
+            className="bg-white border border-gray-200 rounded-xl p-6"
           >
-            <p className="text-sm font-medium text-slate-400 mb-2">{stat.label}</p>
+            <p className="text-sm font-medium text-gray-500 mb-2">{stat.label}</p>
             <p className={`text-3xl font-bold ${
-              stat.color === 'purple' ? 'text-white' :
-              stat.color === 'green' ? 'text-green-400' : 'text-slate-400'
+              stat.color === 'green' ? 'text-green-600' : 'text-gray-900'
             }`}>
               {stat.value}
             </p>
@@ -188,55 +185,55 @@ export default function ReservationList() {
       </div>
 
       {/* Active Reservations */}
-      <div className="glass-card fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-green-500/10 rounded-lg">
-            <Calendar className="w-5 h-5 text-green-400" />
+          <div className="p-2 bg-green-50 rounded-lg">
+            <Calendar className="w-5 h-5 text-green-600" />
           </div>
-          <h2 className="text-xl font-semibold text-white">Active Reservations</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Active Reservations</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-700">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Room</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-in</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Checkout</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Nights</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Actions</th>
+              <tr className="border-b border-gray-200">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Room</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Checkout</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nights</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-gray-200">
               {activeReservations.length > 0 ? (
                 activeReservations.map((reservation) => (
-                  <tr key={reservation.id} className="group hover:bg-slate-800/30 transition-all">
+                  <tr key={reservation.id} className="hover:bg-gray-50 transition-all">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-white font-semibold">
                           {reservation.customer?.full_name?.charAt(0) || '?'}
                         </div>
-                        <span className="font-medium text-white">{reservation.customer?.full_name || 'Unknown'}</span>
+                        <span className="font-medium text-gray-900">{reservation.customer?.full_name || 'Unknown'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <Building2 className="w-4 h-4 text-slate-500" />
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Building2 className="w-4 h-4 text-gray-400" />
                         Room {reservation.room?.room_number || 'N/A'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-300">
+                    <td className="px-6 py-4 text-gray-600">
                       {new Date(reservation.check_in_date).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-slate-300">
+                    <td className="px-6 py-4 text-gray-600">
                       {reservation.expected_check_out_date
                         ? new Date(reservation.expected_check_out_date).toLocaleDateString()
                         : 'Not set'}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-sm text-slate-300">
+                      <span className="px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-600">
                         {reservation.expected_check_out_date
                           ? calculateNights(reservation.check_in_date, reservation.expected_check_out_date)
                           : '-'} nights
@@ -249,14 +246,14 @@ export default function ReservationList() {
                           <>
                             <button
                               onClick={() => handleCheckin(reservation.id)}
-                              className="px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-lg text-sm font-medium text-green-400 hover:bg-green-500/30 transition-all flex items-center gap-1.5"
+                              className="px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm font-medium text-green-600 hover:bg-green-100 transition-all flex items-center gap-1.5"
                             >
                               <LogIn className="w-4 h-4" />
                               Check In
                             </button>
                             <button
                               onClick={() => handleCancel(reservation.id)}
-                              className="px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/30 transition-all flex items-center gap-1.5"
+                              className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 transition-all flex items-center gap-1.5"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -264,20 +261,20 @@ export default function ReservationList() {
                         ) : isCheckedIn(reservation) ? (
                           <button
                             onClick={() => handleCheckout(reservation.id)}
-                            className="px-3 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg text-sm font-medium text-blue-400 hover:bg-blue-500/30 transition-all flex items-center gap-1.5"
+                            className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-100 transition-all flex items-center gap-1.5"
                           >
                             <LogOut className="w-4 h-4" />
                             Checkout
                           </button>
                         ) : (
                           <>
-                            <span className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-500 flex items-center gap-1.5">
+                            <span className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-500 flex items-center gap-1.5">
                               <Clock className="w-4 h-4" />
                               Future
                             </span>
                             <button
                               onClick={() => handleCancel(reservation.id)}
-                              className="px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/30 transition-all flex items-center gap-1.5"
+                              className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 transition-all flex items-center gap-1.5"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -285,7 +282,7 @@ export default function ReservationList() {
                         )}
                         <button
                           onClick={() => navigate(`/customers/${reservation.customer_id}`)}
-                          className="px-3 py-2 bg-slate-800 border border-purple-500/30 rounded-lg text-sm font-medium text-purple-400 hover:bg-slate-700 transition-all"
+                          className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200 transition-all"
                         >
                           <Receipt className="w-4 h-4" />
                         </button>
@@ -296,8 +293,8 @@ export default function ReservationList() {
               ) : (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                    <p className="text-slate-500">No active reservations</p>
+                    <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-gray-500">No active reservations</p>
                   </td>
                 </tr>
               )}
@@ -307,48 +304,48 @@ export default function ReservationList() {
       </div>
 
       {/* Completed Reservations */}
-      <div className="glass-card fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-slate-500/10 rounded-lg">
-            <Calendar className="w-5 h-5 text-slate-400" />
+          <div className="p-2 bg-gray-100 rounded-lg">
+            <Calendar className="w-5 h-5 text-gray-600" />
           </div>
-          <h2 className="text-xl font-semibold text-white">Recent Completed</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Recent Completed</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-700">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Room</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-in</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-out</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Nights</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
+              <tr className="border-b border-gray-200">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Room</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-out</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nights</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-gray-200">
               {completedReservations.length > 0 ? (
                 completedReservations.slice(0, 5).map((reservation) => (
-                  <tr key={reservation.id} className="group hover:bg-slate-800/30 transition-all">
+                  <tr key={reservation.id} className="hover:bg-gray-50 transition-all">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center text-white font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
                           {reservation.customer?.full_name?.charAt(0) || '?'}
                         </div>
-                        <span className="font-medium text-slate-300">{reservation.customer?.full_name || 'Unknown'}</span>
+                        <span className="font-medium text-gray-600">{reservation.customer?.full_name || 'Unknown'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-400">Room {reservation.room?.room_number || 'N/A'}</td>
-                    <td className="px-6 py-4 text-slate-400">
+                    <td className="px-6 py-4 text-gray-500">Room {reservation.room?.room_number || 'N/A'}</td>
+                    <td className="px-6 py-4 text-gray-500">
                       {new Date(reservation.check_in_date).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-slate-400">
+                    <td className="px-6 py-4 text-gray-500">
                       {reservation.actual_check_out_date
                         ? new Date(reservation.actual_check_out_date).toLocaleDateString()
                         : 'Not set'}
                     </td>
-                    <td className="px-6 py-4 text-slate-400">
+                    <td className="px-6 py-4 text-gray-500">
                       {reservation.actual_check_out_date
                         ? calculateNights(reservation.check_in_date, reservation.actual_check_out_date)
                         : '-'}
@@ -359,8 +356,8 @@ export default function ReservationList() {
               ) : (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                    <p className="text-slate-500">No completed reservations</p>
+                    <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-gray-500">No completed reservations</p>
                   </td>
                 </tr>
               )}

@@ -44,7 +44,6 @@ export default function CustomerDetails() {
         roomService.getAllRooms(),
       ])
       setCustomer(customerData)
-      // Filter reservations for this customer
       setReservations(reservationsData.filter(r => r.customer_id === id))
       setBills(billsData)
       setRooms(roomsData)
@@ -66,10 +65,10 @@ export default function CustomerDetails() {
   if (!customer) {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <h2 className="text-2xl font-bold text-slate-200">Customer not found</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Customer not found</h2>
         <button
           onClick={() => navigate('/customers')}
-          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+          className="px-5 py-2.5 bg-gray-900 rounded-lg font-medium text-white hover:bg-gray-800 transition-colors"
         >
           Back to Customers
         </button>
@@ -88,7 +87,6 @@ export default function CustomerDetails() {
     if (!customer) return
 
     try {
-      // Create bill via API with complete data
       const billRequest = {
         customer_id: customer.id,
         reservation_id: selectedReservationId,
@@ -129,7 +127,6 @@ export default function CustomerDetails() {
     try {
       if (!selectedBill) return
 
-      // Create payment via API
       await billService.createPayment(selectedBill.id, {
         amount: payment.amount,
         payment_method: payment.payment_method as 'CASH' | 'CARD' | 'UPI',
@@ -163,46 +160,45 @@ export default function CustomerDetails() {
     { id: 'payments', label: 'Payments' },
   ]
 
-  const getStatusBadge = (status: string, _type: 'reservation' | 'bill') => {
+  const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      // Reservation statuses
-      CONFIRMED: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      CHECKED_IN: 'bg-green-500/20 text-green-400 border-green-500/30',
-      CHECKED_OUT: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-      CANCELLED: 'bg-red-500/20 text-red-400 border-red-500/30',
-      // Bill statuses
-      DRAFT: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-      FINALIZED: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      PAID: 'bg-green-500/20 text-green-400 border-green-500/30',
-      UNPAID: 'bg-red-500/20 text-red-400 border-red-500/30',
+      CONFIRMED: 'bg-blue-50 text-blue-600 border-blue-200',
+      CHECKED_IN: 'bg-green-50 text-green-600 border-green-200',
+      CHECKED_OUT: 'bg-gray-100 text-gray-600 border-gray-200',
+      CANCELLED: 'bg-red-50 text-red-600 border-red-200',
+      ACTIVE: 'bg-green-50 text-green-600 border-green-200',
+      DRAFT: 'bg-gray-100 text-gray-600 border-gray-200',
+      FINALIZED: 'bg-blue-50 text-blue-600 border-blue-200',
+      PAID: 'bg-green-50 text-green-600 border-green-200',
+      UNPAID: 'bg-red-50 text-red-600 border-red-200',
     }
 
     return (
-      <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold border ${styles[status] || 'bg-slate-500/20 text-slate-400 border-slate-500/30'}`}>
-        <div className={`w-2 h-2 rounded-full ${status === 'PAID' || status === 'CHECKED_IN' ? 'bg-green-400 animate-pulse' : status === 'CONFIRMED' || status === 'FINALIZED' ? 'bg-blue-400' : 'bg-slate-400'}`} />
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${styles[status] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${status === 'PAID' || status === 'CHECKED_IN' || status === 'ACTIVE' ? 'bg-green-500' : status === 'CONFIRMED' || status === 'FINALIZED' ? 'bg-blue-500' : status === 'UNPAID' || status === 'CANCELLED' ? 'bg-red-500' : 'bg-gray-400'}`} />
         {status}
       </span>
     )
   }
 
   return (
-    <div className="space-y-6 fade-in">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4 slide-in-left">
+      <div className="flex items-center gap-4">
         <button
           onClick={() => navigate('/customers')}
-          className="p-2 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-400 hover:text-white hover:border-purple-500/30 transition-all"
+          className="p-2 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-purple-500/30">
+            <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center text-white text-lg font-bold">
               {customer.full_name.charAt(0)}
             </div>
             <div>
-              <h1 className="text-3xl font-bold gradient-text">{customer.full_name}</h1>
-              <p className="text-slate-400">Customer details and history</p>
+              <h1 className="text-2xl font-bold text-gray-900">{customer.full_name}</h1>
+              <p className="text-gray-500">Customer details and history</p>
             </div>
           </div>
         </div>
@@ -243,52 +239,52 @@ export default function CustomerDetails() {
       />
 
       {/* Customer Info Card */}
-      <div className="glass-card p-6 rounded-xl fade-in" style={{ animationDelay: '0.1s', opacity: 0 }}>
-        <h2 className="text-lg font-semibold text-slate-200 mb-4">Customer Information</h2>
+      <div className="card">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <Phone className="h-5 w-5 text-purple-400" />
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <Phone className="h-5 w-5 text-gray-600" />
             </div>
             <div>
-              <div className="text-sm font-medium text-slate-400 mb-1">Phone</div>
-              <div className="text-base font-medium text-slate-200">{customer.phone}</div>
+              <div className="text-sm font-medium text-gray-500 mb-1">Phone</div>
+              <div className="text-base font-medium text-gray-900">{customer.phone}</div>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-pink-500/10 rounded-lg">
-              <MapPin className="h-5 w-5 text-pink-400" />
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <MapPin className="h-5 w-5 text-gray-600" />
             </div>
             <div>
-              <div className="text-sm font-medium text-slate-400 mb-1">Address</div>
-              <div className="text-base font-medium text-slate-200">{customer.address}</div>
+              <div className="text-sm font-medium text-gray-500 mb-1">Address</div>
+              <div className="text-base font-medium text-gray-900">{customer.address}</div>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-teal-500/10 rounded-lg">
-              <IdCard className="h-5 w-5 text-teal-400" />
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <IdCard className="h-5 w-5 text-gray-600" />
             </div>
             <div>
-              <div className="text-sm font-medium text-slate-400 mb-1">ID Proof</div>
-              <div className="text-base font-medium text-slate-200">{customer.id_proof_type}</div>
-              <div className="text-sm text-slate-400">{customer.id_proof_number}</div>
+              <div className="text-sm font-medium text-gray-500 mb-1">ID Proof</div>
+              <div className="text-base font-medium text-gray-900">{customer.id_proof_type}</div>
+              <div className="text-sm text-gray-500">{customer.id_proof_number}</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="space-y-4 fade-in" style={{ animationDelay: '0.2s', opacity: 0 }}>
+      <div className="space-y-4">
         {/* Tab Navigation */}
-        <div className="flex gap-2 p-1 bg-slate-800/50 rounded-xl w-fit">
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+              className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-purple-500/20 text-purple-400 shadow-lg shadow-purple-500/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               {tab.label}
@@ -300,30 +296,21 @@ export default function CustomerDetails() {
         {activeTab === 'overview' && (
           <div className="grid gap-4 md:grid-cols-3">
             {[
-              { label: 'Total Reservations', value: reservations.length, icon: Calendar, color: 'purple' },
-              { label: 'Total Bills', value: bills.length, icon: Receipt, color: 'pink' },
-              { label: 'Total Amount', value: `₹${bills.reduce((sum, bill) => sum + bill.total_amount, 0).toFixed(2)}`, icon: Wallet, color: 'teal' },
-            ].map((stat, idx) => {
+              { label: 'Total Reservations', value: reservations.length, icon: Calendar },
+              { label: 'Total Bills', value: bills.length, icon: Receipt },
+              { label: 'Total Amount', value: `₹${bills.reduce((sum, bill) => sum + bill.total_amount, 0).toFixed(2)}`, icon: Wallet },
+            ].map((stat) => {
               const Icon = stat.icon
-              const colorClasses = {
-                purple: { bg: 'bg-purple-500/10', text: 'text-purple-400', shadow: 'group-hover:shadow-purple-500/30' },
-                pink: { bg: 'bg-pink-500/10', text: 'text-pink-400', shadow: 'group-hover:shadow-pink-500/30' },
-                teal: { bg: 'bg-teal-500/10', text: 'text-teal-400', shadow: 'group-hover:shadow-teal-500/30' },
-              }
-              const colors = colorClasses[stat.color as keyof typeof colorClasses]
               return (
-                <div
-                  key={stat.label}
-                  className="glass-card p-6 rounded-xl group relative overflow-hidden fade-in"
-                  style={{ animationDelay: `${0.3 + idx * 0.1}s`, opacity: 0 }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                  <div className="relative z-10">
-                    <div className={`p-3 ${colors.bg} rounded-xl inline-block mb-4 ${colors.shadow} transition-all`}>
-                      <Icon className={`w-6 h-6 ${colors.text}`} />
+                <div key={stat.label} className="card">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                     </div>
-                    <p className="text-sm font-medium text-slate-400 mb-1">{stat.label}</p>
-                    <p className={`text-2xl font-bold ${colors.text}`}>{stat.value}</p>
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-gray-600" />
+                    </div>
                   </div>
                 </div>
               )
@@ -333,12 +320,12 @@ export default function CustomerDetails() {
 
         {/* Reservations Tab */}
         {activeTab === 'reservations' && (
-          <div className="glass-card rounded-xl overflow-hidden">
-            <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-200">Reservations</h2>
+          <div className="card">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-gray-900">Reservations</h2>
               <button
                 onClick={() => setIsReservationFormOpen(true)}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-medium text-white text-sm hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gray-900 rounded-lg font-medium text-white text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
                 New Reservation
@@ -347,33 +334,31 @@ export default function CustomerDetails() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-700/50">
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-in</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Check-out</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Actions</th>
+                  <tr className="border-b border-gray-200">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-out</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/50">
+                <tbody className="divide-y divide-gray-100">
                   {reservations.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center gap-3">
-                          <Calendar className="w-12 h-12 text-slate-600" />
-                          <p className="text-slate-400">No reservations found</p>
-                        </div>
+                      <td colSpan={4} className="px-4 py-12 text-center">
+                        <Calendar className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                        <p className="text-gray-500">No reservations found</p>
                       </td>
                     </tr>
                   ) : (
                     reservations.map((reservation) => (
-                      <tr key={reservation.id} className="group hover:bg-slate-800/30 transition-all">
-                        <td className="px-6 py-4 text-slate-300">{new Date(reservation.check_in_date).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 text-slate-300">{reservation.expected_check_out_date ? new Date(reservation.expected_check_out_date).toLocaleDateString() : 'N/A'}</td>
-                        <td className="px-6 py-4">{getStatusBadge(reservation.status, 'reservation')}</td>
-                        <td className="px-6 py-4">
+                      <tr key={reservation.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-900">{new Date(reservation.check_in_date).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-gray-900">{reservation.expected_check_out_date ? new Date(reservation.expected_check_out_date).toLocaleDateString() : 'N/A'}</td>
+                        <td className="px-4 py-3">{getStatusBadge(reservation.status)}</td>
+                        <td className="px-4 py-3">
                           <button
                             onClick={() => handleCreateBill(reservation.id)}
-                            className="px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-lg text-purple-400 text-sm font-medium hover:bg-purple-500/20 transition-all flex items-center gap-2"
+                            className="px-3 py-1.5 bg-gray-100 rounded-lg text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
                           >
                             <Receipt className="h-4 w-4" />
                             Generate Bill
@@ -390,66 +375,62 @@ export default function CustomerDetails() {
 
         {/* Bills Tab */}
         {activeTab === 'bills' && (
-          <div className="glass-card rounded-xl overflow-hidden">
-            <div className="p-6 border-b border-slate-700/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-200">Bills</h2>
-                  <p className="text-sm text-slate-400">All bills with and without reservations</p>
-                </div>
-                <button
-                  onClick={() => handleCreateBill()}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-medium text-white text-sm hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create Bill
-                </button>
+          <div className="card">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Bills</h2>
+                <p className="text-sm text-gray-500">All bills with and without reservations</p>
               </div>
+              <button
+                onClick={() => handleCreateBill()}
+                className="px-4 py-2 bg-gray-900 rounded-lg font-medium text-white text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create Bill
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-700/50">
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Bill Date</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Actions</th>
+                  <tr className="border-b border-gray-200">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Bill Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/50">
+                <tbody className="divide-y divide-gray-100">
                   {bills.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center gap-3">
-                          <FileText className="w-12 h-12 text-slate-600" />
-                          <p className="text-slate-400">No bills found</p>
-                        </div>
+                      <td colSpan={5} className="px-4 py-12 text-center">
+                        <FileText className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                        <p className="text-gray-500">No bills found</p>
                       </td>
                     </tr>
                   ) : (
                     bills.map((bill) => (
-                      <tr key={bill.id} className="group hover:bg-slate-800/30 transition-all">
-                        <td className="px-6 py-4 text-slate-300">{new Date(bill.bill_date).toLocaleDateString()}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2.5 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg text-sm">
+                      <tr key={bill.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-900">{new Date(bill.bill_date).toLocaleDateString()}</td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm">
                             {bill.bill_type}
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-semibold text-white">₹{bill.total_amount.toFixed(2)}</td>
-                        <td className="px-6 py-4">{getStatusBadge(bill.status, 'bill')}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3 font-semibold text-gray-900">₹{bill.total_amount.toFixed(2)}</td>
+                        <td className="px-4 py-3">{getStatusBadge(bill.status)}</td>
+                        <td className="px-4 py-3">
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleViewBill(bill)}
-                              className="p-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-all"
+                              className="p-2 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors"
                             >
                               <Eye className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleAddPayment(bill)}
                               disabled={bill.status === 'PAID'}
-                              className="px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm font-medium hover:bg-green-500/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-green-600 text-sm font-medium hover:bg-green-100 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <CreditCard className="h-4 w-4" />
                               Add Payment
@@ -467,35 +448,35 @@ export default function CustomerDetails() {
 
         {/* Payments Tab */}
         {activeTab === 'payments' && (
-          <div className="glass-card rounded-xl overflow-hidden">
-            <div className="p-6 border-b border-slate-700/50">
-              <h2 className="text-lg font-semibold text-slate-200">Payment History</h2>
-              <p className="text-sm text-slate-400">All payments made by this customer</p>
+          <div className="card">
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold text-gray-900">Payment History</h2>
+              <p className="text-sm text-gray-500">All payments made by this customer</p>
             </div>
             {customerPayments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <CreditCard className="w-12 h-12 text-slate-600" />
-                <p className="text-slate-400">No payments recorded yet</p>
+              <div className="flex flex-col items-center justify-center py-12 gap-2">
+                <CreditCard className="w-10 h-10 text-gray-300" />
+                <p className="text-gray-500">No payments recorded yet</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-slate-700/50">
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Bill ID</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Method</th>
+                    <tr className="border-b border-gray-200">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Bill ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Method</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/50">
+                  <tbody className="divide-y divide-gray-100">
                     {customerPayments.map((payment) => (
-                      <tr key={payment.id} className="group hover:bg-slate-800/30 transition-all">
-                        <td className="px-6 py-4 text-slate-300">{new Date(payment.payment_date).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 font-mono text-sm text-slate-400">{payment.bill_id}</td>
-                        <td className="px-6 py-4 font-semibold text-white">₹{payment.amount.toFixed(2)}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2.5 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg text-sm">
+                      <tr key={payment.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-900">{new Date(payment.payment_date).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 font-mono text-sm text-gray-500">{payment.bill_id}</td>
+                        <td className="px-4 py-3 font-semibold text-gray-900">₹{payment.amount.toFixed(2)}</td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm">
                             {payment.payment_method}
                           </span>
                         </td>

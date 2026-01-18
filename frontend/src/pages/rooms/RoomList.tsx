@@ -9,25 +9,25 @@ import { handleApiError } from '@/lib/api'
 const getStatusBadge = (status: Room['status']) => {
   const styles = {
     AVAILABLE: {
-      bg: 'bg-green-500/20',
-      text: 'text-green-400',
-      border: 'border-green-500/30',
+      bg: 'bg-green-50',
+      text: 'text-green-600',
+      border: 'border-green-200',
       icon: <DoorOpen className="w-3.5 h-3.5" />,
-      dot: 'bg-green-400'
+      dot: 'bg-green-500'
     },
     OCCUPIED: {
-      bg: 'bg-blue-500/20',
-      text: 'text-blue-400',
-      border: 'border-blue-500/30',
+      bg: 'bg-blue-50',
+      text: 'text-blue-600',
+      border: 'border-blue-200',
       icon: <Building2 className="w-3.5 h-3.5" />,
-      dot: 'bg-blue-400'
+      dot: 'bg-blue-500'
     },
     MAINTENANCE: {
-      bg: 'bg-amber-500/20',
-      text: 'text-amber-400',
-      border: 'border-amber-500/30',
+      bg: 'bg-amber-50',
+      text: 'text-amber-600',
+      border: 'border-amber-200',
       icon: <Wrench className="w-3.5 h-3.5" />,
-      dot: 'bg-amber-400'
+      dot: 'bg-amber-500'
     },
   }
 
@@ -35,7 +35,7 @@ const getStatusBadge = (status: Room['status']) => {
 
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${style.bg} ${style.text} ${style.border}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${style.dot} ${status === 'AVAILABLE' ? 'animate-pulse' : ''}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
       {status}
     </span>
   )
@@ -142,37 +142,36 @@ export default function RoomList() {
   }
 
   const statCards = [
-    { label: 'Total Rooms', value: roomStats.total, color: 'purple' },
+    { label: 'Total Rooms', value: roomStats.total, color: 'gray' },
     { label: 'Available', value: roomStats.available, color: 'green' },
     { label: 'Occupied', value: roomStats.occupied, color: 'blue' },
     { label: 'Maintenance', value: roomStats.maintenance, color: 'amber' },
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-50 min-h-screen p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between slide-in-left">
+      <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl font-bold gradient-text">Rooms</h1>
+            <h1 className="text-4xl font-bold text-gray-900">Rooms</h1>
           </div>
-          <p className="text-slate-400">Manage your lodge rooms and types</p>
+          <p className="text-gray-500">Manage your lodge rooms and types</p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={() => setIsRoomTypeFormOpen(true)}
-            className="px-5 py-2.5 bg-slate-800 border border-purple-500/30 rounded-xl font-semibold text-purple-400 hover:bg-slate-700 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex items-center gap-2"
+            className="px-5 py-2.5 bg-gray-100 border border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-200 transition-all duration-300 flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add Type
           </button>
           <button
             onClick={() => setIsRoomFormOpen(true)}
-            className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 relative overflow-hidden group"
+            className="px-5 py-2.5 bg-gray-900 rounded-xl font-semibold text-white hover:bg-gray-800 transition-all duration-300 flex items-center gap-2"
           >
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000" />
-            <Plus className="w-4 h-4 relative z-10" />
-            <span className="relative z-10">Add Room</span>
+            <Plus className="w-4 h-4" />
+            <span>Add Room</span>
           </button>
         </div>
       </div>
@@ -194,17 +193,16 @@ export default function RoomList() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        {statCards.map((stat, idx) => (
+        {statCards.map((stat) => (
           <div
             key={stat.label}
-            className="glass-card fade-in group"
-            style={{ animationDelay: `${idx * 0.1}s`, opacity: 0 }}
+            className="bg-white border border-gray-200 rounded-xl p-6"
           >
-            <p className="text-sm font-medium text-slate-400 mb-2">{stat.label}</p>
+            <p className="text-sm font-medium text-gray-500 mb-2">{stat.label}</p>
             <p className={`text-3xl font-bold ${
-              stat.color === 'purple' ? 'text-white' :
-              stat.color === 'green' ? 'text-green-400' :
-              stat.color === 'blue' ? 'text-blue-400' : 'text-amber-400'
+              stat.color === 'gray' ? 'text-gray-900' :
+              stat.color === 'green' ? 'text-green-600' :
+              stat.color === 'blue' ? 'text-blue-600' : 'text-amber-600'
             }`}>
               {stat.value}
             </p>
@@ -213,44 +211,44 @@ export default function RoomList() {
       </div>
 
       {/* Room Types */}
-      <div className="glass-card fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-purple-500/10 rounded-lg">
-            <Layers className="w-5 h-5 text-purple-400" />
+          <div className="p-2 bg-gray-100 rounded-lg">
+            <Layers className="w-5 h-5 text-gray-600" />
           </div>
-          <h2 className="text-xl font-semibold text-white">Room Types</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Room Types</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-700">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Type Name</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Default Rate</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Rooms Count</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Action</th>
+              <tr className="border-b border-gray-200">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type Name</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Default Rate</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Rooms Count</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-gray-200">
               {roomTypes.length > 0 ? (
                 roomTypes.map((type) => {
                   const typeRoomsCount = rooms.filter(r => r.type_id === type.id).length
                   return (
-                    <tr key={type.id} className="group hover:bg-slate-800/30 transition-all">
-                      <td className="px-6 py-4 font-medium text-white">{type.name}</td>
-                      <td className="px-6 py-4 text-slate-300">
-                        <span className="text-green-400 font-semibold">₹{type.default_rate.toFixed(2)}</span>
-                        <span className="text-slate-500">/night</span>
+                    <tr key={type.id} className="hover:bg-gray-50 transition-all">
+                      <td className="px-6 py-4 font-medium text-gray-900">{type.name}</td>
+                      <td className="px-6 py-4 text-gray-600">
+                        <span className="text-green-600 font-semibold">${type.default_rate.toFixed(2)}</span>
+                        <span className="text-gray-400">/night</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-3 py-1 bg-slate-800 border border-slate-700 rounded-full text-sm text-slate-300">
+                        <span className="px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-600">
                           {typeRoomsCount} rooms
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => handleEditRoomType(type)}
-                          className="px-4 py-2 bg-slate-800 border border-purple-500/30 rounded-lg text-sm font-medium text-purple-400 hover:bg-slate-700 hover:border-purple-500/50 transition-all flex items-center gap-2"
+                          className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200 transition-all flex items-center gap-2"
                         >
                           <Edit2 className="w-4 h-4" />
                           Edit
@@ -262,8 +260,8 @@ export default function RoomList() {
               ) : (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center">
-                    <Layers className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                    <p className="text-slate-500">No room types found. Add one to get started.</p>
+                    <Layers className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-gray-500">No room types found. Add one to get started.</p>
                   </td>
                 </tr>
               )}
@@ -273,47 +271,47 @@ export default function RoomList() {
       </div>
 
       {/* Rooms List */}
-      <div className="glass-card fade-in" style={{ animationDelay: '0.5s', opacity: 0 }}>
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-blue-500/10 rounded-lg">
-            <Building2 className="w-5 h-5 text-blue-400" />
+          <div className="p-2 bg-gray-100 rounded-lg">
+            <Building2 className="w-5 h-5 text-gray-600" />
           </div>
-          <h2 className="text-xl font-semibold text-white">All Rooms</h2>
+          <h2 className="text-xl font-semibold text-gray-900">All Rooms</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-700">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Room Number</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Rate</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-400 uppercase tracking-wider">Action</th>
+              <tr className="border-b border-gray-200">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Room Number</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Rate</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-gray-200">
               {rooms.length > 0 ? (
                 rooms.map((room) => (
-                  <tr key={room.id} className="group hover:bg-slate-800/30 transition-all">
+                  <tr key={room.id} className="hover:bg-gray-50 transition-all">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                        <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center text-white font-bold">
                           {room.room_number}
                         </div>
-                        <span className="font-semibold text-white">Room {room.room_number}</span>
+                        <span className="font-semibold text-gray-900">Room {room.room_number}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-300">{room.type?.name || 'N/A'}</td>
+                    <td className="px-6 py-4 text-gray-600">{room.type?.name || 'N/A'}</td>
                     <td className="px-6 py-4">
-                      <span className="text-green-400 font-semibold">₹{room.type?.default_rate.toFixed(2) || '0.00'}</span>
-                      <span className="text-slate-500">/night</span>
+                      <span className="text-green-600 font-semibold">${room.type?.default_rate.toFixed(2) || '0.00'}</span>
+                      <span className="text-gray-400">/night</span>
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(room.status)}</td>
                     <td className="px-6 py-4">
                       <button
                         onClick={() => handleEditRoom(room)}
-                        className="px-4 py-2 bg-slate-800 border border-purple-500/30 rounded-lg text-sm font-medium text-purple-400 hover:bg-slate-700 hover:border-purple-500/50 transition-all flex items-center gap-2"
+                        className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200 transition-all flex items-center gap-2"
                       >
                         <Edit2 className="w-4 h-4" />
                         Edit
@@ -324,8 +322,8 @@ export default function RoomList() {
               ) : (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
-                    <Building2 className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                    <p className="text-slate-500">No rooms found. Add room types and rooms to get started.</p>
+                    <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-gray-500">No rooms found. Add room types and rooms to get started.</p>
                   </td>
                 </tr>
               )}

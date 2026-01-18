@@ -71,46 +71,46 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 fade-in max-w-4xl mx-auto">
+    <div className="space-y-6 bg-gray-50 min-h-screen p-6 max-w-4xl mx-auto">
       {/* Page Header */}
-      <div className="slide-in-left">
+      <div>
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-purple-500/10 rounded-xl">
-            <SettingsIcon className="w-6 h-6 text-purple-400" />
+          <div className="p-2 bg-gray-100 rounded-xl">
+            <SettingsIcon className="w-6 h-6 text-gray-600" />
           </div>
-          <h1 className="text-3xl font-bold gradient-text">Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
         </div>
-        <p className="text-slate-400">Configure your lodge details for bill generation</p>
+        <p className="text-gray-500">Configure your lodge details for bill generation</p>
       </div>
 
       {/* Success Message */}
       {saved && (
-        <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-xl fade-in">
-          <CheckCircle className="w-5 h-5 text-green-400" />
-          <span className="text-green-400 font-medium">Settings saved successfully!</span>
+        <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+          <CheckCircle className="w-5 h-5 text-green-600" />
+          <span className="text-green-600 font-medium">Settings saved successfully!</span>
         </div>
       )}
 
       {/* Error Message */}
       {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl fade-in">
-          <span className="text-red-400">{error}</span>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+          <span className="text-red-600">{error}</span>
         </div>
       )}
 
       {/* Settings Form */}
       <form onSubmit={handleSave} className="space-y-6">
         {/* Lodge Information */}
-        <div className="glass-card p-6 rounded-xl fade-in" style={{ animationDelay: '0.1s', opacity: 0 }}>
-          <h2 className="text-lg font-semibold text-slate-200 mb-6 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-purple-400" />
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-gray-600" />
             Lodge Information
           </h2>
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* Lodge Name */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Lodge Name *
               </label>
               <input
@@ -119,13 +119,13 @@ export default function SettingsPage() {
                 onChange={(e) => handleChange('lodge_name', e.target.value)}
                 placeholder="Enter your lodge name"
                 required
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
               />
             </div>
 
             {/* Address */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 <MapPin className="w-4 h-4 inline mr-1" />
                 Address
               </label>
@@ -134,13 +134,13 @@ export default function SettingsPage() {
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="Enter complete address"
                 rows={3}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none resize-none"
               />
             </div>
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 <Phone className="w-4 h-4 inline mr-1" />
                 Phone Number
               </label>
@@ -149,13 +149,13 @@ export default function SettingsPage() {
                 value={settings.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 placeholder="Enter phone number"
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
               />
             </div>
 
             {/* GST Number */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 <FileText className="w-4 h-4 inline mr-1" />
                 GSTIN/UIN
               </label>
@@ -164,23 +164,23 @@ export default function SettingsPage() {
                 value={settings.gst_number}
                 onChange={(e) => handleChange('gst_number', e.target.value.toUpperCase())}
                 placeholder="e.g., 19ATGPM6881Q1ZL"
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none uppercase"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none uppercase"
               />
             </div>
           </div>
         </div>
 
         {/* State Information */}
-        <div className="glass-card p-6 rounded-xl fade-in" style={{ animationDelay: '0.2s', opacity: 0 }}>
-          <h2 className="text-lg font-semibold text-slate-200 mb-6 flex items-center gap-2">
-            <Map className="w-5 h-5 text-pink-400" />
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <Map className="w-5 h-5 text-gray-600" />
             State Information
           </h2>
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* State Name */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 State Name
               </label>
               <input
@@ -188,13 +188,13 @@ export default function SettingsPage() {
                 value={settings.state_name}
                 onChange={(e) => handleChange('state_name', e.target.value)}
                 placeholder="e.g., West Bengal"
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
               />
             </div>
 
             {/* State Code */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 State Code
               </label>
               <input
@@ -202,20 +202,19 @@ export default function SettingsPage() {
                 value={settings.state_code}
                 onChange={(e) => handleChange('state_code', e.target.value)}
                 placeholder="e.g., 19"
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-100 placeholder:text-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
+        <div className="flex justify-end">
           <button
             type="submit"
             disabled={saving}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 relative overflow-hidden group"
+            className="px-8 py-3 bg-gray-900 rounded-xl font-semibold text-white hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity" />
             {saving ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
