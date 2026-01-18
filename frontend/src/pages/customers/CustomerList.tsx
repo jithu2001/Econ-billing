@@ -56,7 +56,7 @@ export default function CustomerList() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between slide-in-left">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-3xl font-bold text-gray-900">Customers</h1>
@@ -82,7 +82,7 @@ export default function CustomerList() {
       />
 
       {/* Search & Table Card */}
-      <div className="card">
+      <div className="card fade-in" style={{ animationDelay: '0.1s', opacity: 0 }}>
         {/* Search Bar */}
         <div className="mb-5">
           <div className="relative">

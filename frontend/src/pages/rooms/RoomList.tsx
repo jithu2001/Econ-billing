@@ -151,7 +151,7 @@ export default function RoomList() {
   return (
     <div className="space-y-6 bg-gray-50 min-h-screen p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between slide-in-left">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-4xl font-bold text-gray-900">Rooms</h1>
@@ -193,10 +193,11 @@ export default function RoomList() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        {statCards.map((stat) => (
+        {statCards.map((stat, idx) => (
           <div
             key={stat.label}
-            className="bg-white border border-gray-200 rounded-xl p-6"
+            className="bg-white border border-gray-200 rounded-xl p-6 fade-in"
+            style={{ animationDelay: `${idx * 0.1}s`, opacity: 0 }}
           >
             <p className="text-sm font-medium text-gray-500 mb-2">{stat.label}</p>
             <p className={`text-3xl font-bold ${
@@ -211,7 +212,7 @@ export default function RoomList() {
       </div>
 
       {/* Room Types */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-gray-100 rounded-lg">
             <Layers className="w-5 h-5 text-gray-600" />
@@ -271,7 +272,7 @@ export default function RoomList() {
       </div>
 
       {/* Rooms List */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.5s', opacity: 0 }}>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-gray-100 rounded-lg">
             <Building2 className="w-5 h-5 text-gray-600" />

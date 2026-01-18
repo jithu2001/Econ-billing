@@ -150,20 +150,21 @@ export default function BillList() {
   return (
     <div className="space-y-6 bg-gray-50 min-h-screen p-6">
       {/* Page Header */}
-      <div>
+      <div className="slide-in-left">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Bills</h1>
         <p className="text-gray-500">Manage and track all billing records</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        {statCards.map((stat) => {
+        {statCards.map((stat, idx) => {
           const Icon = stat.icon
           const colors = colorClasses[stat.color as keyof typeof colorClasses]
           return (
             <div
               key={stat.label}
-              className="bg-white border border-gray-200 rounded-xl p-4"
+              className="bg-white border border-gray-200 rounded-xl p-4 fade-in"
+              style={{ animationDelay: `${idx * 0.05}s`, opacity: 0 }}
             >
               <div className={`p-2 ${colors.bg} rounded-lg inline-block mb-3`}>
                 <Icon className={`w-5 h-5 ${colors.text}`} />
@@ -176,7 +177,7 @@ export default function BillList() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-5 w-5 text-gray-600" />
           <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
@@ -258,7 +259,7 @@ export default function BillList() {
       </div>
 
       {/* Bills Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
