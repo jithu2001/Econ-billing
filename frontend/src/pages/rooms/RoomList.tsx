@@ -238,7 +238,7 @@ export default function RoomList() {
                     <tr key={type.id} className="hover:bg-gray-50 transition-all">
                       <td className="px-6 py-4 font-medium text-gray-900">{type.name}</td>
                       <td className="px-6 py-4 text-gray-600">
-                        <span className="text-green-600 font-semibold">${type.default_rate.toFixed(2)}</span>
+                        <span className="text-green-600 font-semibold">₹{type.default_rate.toFixed(2)}</span>
                         <span className="text-gray-400">/night</span>
                       </td>
                       <td className="px-6 py-4">
@@ -305,7 +305,7 @@ export default function RoomList() {
                     </td>
                     <td className="px-6 py-4 text-gray-600">{room.type?.name || 'N/A'}</td>
                     <td className="px-6 py-4">
-                      <span className="text-green-600 font-semibold">${room.type?.default_rate.toFixed(2) || '0.00'}</span>
+                      <span className="text-green-600 font-semibold">₹{room.type?.default_rate.toFixed(2) || '0.00'}</span>
                       <span className="text-gray-400">/night</span>
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(room.status)}</td>

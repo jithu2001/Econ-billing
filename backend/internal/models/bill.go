@@ -30,6 +30,8 @@ type Bill struct {
 	Reservation    *Reservation `gorm:"foreignKey:ReservationID" json:"reservation,omitempty"`
 	BillType       BillType     `gorm:"type:varchar(20);not null" json:"bill_type"`
 	BillDate       string       `gorm:"type:date;not null" json:"bill_date"`
+	InvoiceNumber  string       `gorm:"type:varchar(50)" json:"invoice_number"`
+	IsGSTBill      bool         `gorm:"default:false" json:"is_gst_bill"`
 	Subtotal       float64      `gorm:"not null;default:0" json:"subtotal"`
 	TaxAmount      float64      `gorm:"not null;default:0" json:"tax_amount"`
 	DiscountAmount float64      `gorm:"not null;default:0" json:"discount_amount"`

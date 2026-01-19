@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings as SettingsIcon, Building2, MapPin, Phone, FileText, Map, Save, CheckCircle } from 'lucide-react'
+import { Settings as SettingsIcon, Building2, MapPin, Phone, FileText, Map, Save, CheckCircle, Receipt, Hash } from 'lucide-react'
 import { settingsService } from '@/services'
 import type { Settings } from '@/types'
 import { handleApiError } from '@/lib/api'
@@ -16,6 +16,10 @@ export default function SettingsPage() {
     gst_number: '',
     state_name: '',
     state_code: '',
+    gst_invoice_prefix: 'GST',
+    gst_invoice_next_number: 1,
+    non_gst_invoice_prefix: 'INV',
+    non_gst_invoice_next_number: 1,
   })
 
   useEffect(() => {
@@ -48,6 +52,10 @@ export default function SettingsPage() {
         gst_number: settings.gst_number,
         state_name: settings.state_name,
         state_code: settings.state_code,
+        gst_invoice_prefix: settings.gst_invoice_prefix,
+        gst_invoice_next_number: settings.gst_invoice_next_number,
+        non_gst_invoice_prefix: settings.non_gst_invoice_prefix,
+        non_gst_invoice_next_number: settings.non_gst_invoice_next_number,
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -58,7 +66,7 @@ export default function SettingsPage() {
     }
   }
 
-  const handleChange = (field: keyof Settings, value: string) => {
+  const handleChange = (field: keyof Settings, value: string | number) => {
     setSettings(prev => ({ ...prev, [field]: value }))
   }
 
@@ -204,6 +212,93 @@ export default function SettingsPage() {
                 placeholder="e.g., 19"
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Invoice Number Configuration */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <Receipt className="w-5 h-5 text-gray-600" />
+            Invoice Number Configuration
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Configure separate invoice number series for GST and Non-GST bills. You can set a starting number if you have existing bills.
+          </p>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* GST Invoice Settings */}
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <Hash className="w-4 h-4" />
+                GST Invoice Series
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Prefix
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.gst_invoice_prefix}
+                    onChange={(e) => handleChange('gst_invoice_prefix', e.target.value.toUpperCase())}
+                    placeholder="e.g., GST"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Next Invoice Number
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={settings.gst_invoice_next_number}
+                    onChange={(e) => handleChange('gst_invoice_next_number', parseInt(e.target.value) || 1)}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Next bill: {settings.gst_invoice_prefix}-{String(settings.gst_invoice_next_number).padStart(4, '0')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Non-GST Invoice Settings */}
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <Hash className="w-4 h-4" />
+                Non-GST Invoice Series
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Prefix
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.non_gst_invoice_prefix}
+                    onChange={(e) => handleChange('non_gst_invoice_prefix', e.target.value.toUpperCase())}
+                    placeholder="e.g., INV"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
+                    Next Invoice Number
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={settings.non_gst_invoice_next_number}
+                    onChange={(e) => handleChange('non_gst_invoice_next_number', parseInt(e.target.value) || 1)}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Next bill: {settings.non_gst_invoice_prefix}-{String(settings.non_gst_invoice_next_number).padStart(4, '0')}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

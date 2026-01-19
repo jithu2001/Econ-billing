@@ -8,7 +8,7 @@ import ReservationForm from '../../components/reservations/ReservationForm'
 import { type BillData } from '../../components/bills/BillEditor'
 import { customerService, reservationService, billService, roomService } from '@/services'
 import { handleApiError } from '@/lib/api'
-import type { Bill, Payment, Customer, Reservation, Room } from '../../types'
+import type { Bill, Customer, Reservation, Room, Payment } from '../../types'
 
 export default function CustomerDetails() {
   const navigate = useNavigate()
@@ -76,8 +76,6 @@ export default function CustomerDetails() {
     )
   }
 
-  const customerPayments: Payment[] = []
-
   const handleCreateBill = (reservationId?: string) => {
     setSelectedReservationId(reservationId)
     setIsBillModalOpen(true)
@@ -92,6 +90,7 @@ export default function CustomerDetails() {
         reservation_id: selectedReservationId,
         bill_type: billData.billType as 'ROOM' | 'WALK_IN' | 'FOOD' | 'MANUAL',
         bill_date: new Date().toISOString().split('T')[0],
+        is_gst_bill: billData.enableGST,
         subtotal: billData.subtotal,
         tax_amount: billData.taxAmount,
         discount_amount: billData.discountAmount,
@@ -157,7 +156,6 @@ export default function CustomerDetails() {
     { id: 'overview', label: 'Overview' },
     { id: 'reservations', label: 'Reservations' },
     { id: 'bills', label: 'Bills' },
-    { id: 'payments', label: 'Payments' },
   ]
 
   const getStatusBadge = (status: string) => {
@@ -446,48 +444,6 @@ export default function CustomerDetails() {
           </div>
         )}
 
-        {/* Payments Tab */}
-        {activeTab === 'payments' && (
-          <div className="card">
-            <div className="mb-5">
-              <h2 className="text-lg font-semibold text-gray-900">Payment History</h2>
-              <p className="text-sm text-gray-500">All payments made by this customer</p>
-            </div>
-            {customerPayments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-2">
-                <CreditCard className="w-10 h-10 text-gray-300" />
-                <p className="text-gray-500">No payments recorded yet</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Bill ID</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Method</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {customerPayments.map((payment) => (
-                      <tr key={payment.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-900">{new Date(payment.payment_date).toLocaleDateString()}</td>
-                        <td className="px-4 py-3 font-mono text-sm text-gray-500">{payment.bill_id}</td>
-                        <td className="px-4 py-3 font-semibold text-gray-900">₹{payment.amount.toFixed(2)}</td>
-                        <td className="px-4 py-3">
-                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm">
-                            {payment.payment_method}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )

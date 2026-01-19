@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Receipt, Calendar, Filter, Search, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X } from 'lucide-react'
+import { Receipt, Calendar, Filter, Search, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X, Eye } from 'lucide-react'
 import { billService, customerService } from '@/services'
 import type { Bill } from '@/types'
 import { handleApiError } from '@/lib/api'
+import BillViewModal from '@/components/bills/BillViewModal'
 
 const getStatusBadge = (status: Bill['status']) => {
   const styles = {
@@ -29,16 +29,20 @@ const getStatusBadge = (status: Bill['status']) => {
 }
 
 export default function BillList() {
-  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [bills, setBills] = useState<Bill[]>([])
   const [filteredBills, setFilteredBills] = useState<Bill[]>([])
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
+  const [gstFilter, setGstFilter] = useState<string>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+
+  // Bill view modal state
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -46,7 +50,7 @@ export default function BillList() {
 
   useEffect(() => {
     applyFilters()
-  }, [bills, statusFilter, searchQuery, dateFrom, dateTo])
+  }, [bills, statusFilter, gstFilter, searchQuery, dateFrom, dateTo])
 
   const loadData = async () => {
     try {
@@ -85,6 +89,13 @@ export default function BillList() {
       filtered = filtered.filter(bill => bill.status === statusFilter)
     }
 
+    // Filter by GST type
+    if (gstFilter === 'GST') {
+      filtered = filtered.filter(bill => bill.is_gst_bill === true)
+    } else if (gstFilter === 'NON_GST') {
+      filtered = filtered.filter(bill => bill.is_gst_bill === false)
+    }
+
     // Filter by search query (customer name)
     if (searchQuery) {
       filtered = filtered.filter(bill =>
@@ -108,9 +119,15 @@ export default function BillList() {
 
   const clearFilters = () => {
     setStatusFilter('ALL')
+    setGstFilter('ALL')
     setSearchQuery('')
     setDateFrom('')
     setDateTo('')
+  }
+
+  const handleViewBill = (bill: Bill) => {
+    setSelectedBill(bill)
+    setIsViewModalOpen(true)
   }
 
   // Calculate stats
@@ -128,8 +145,8 @@ export default function BillList() {
     { label: 'Paid', value: stats.paid, icon: CheckCircle, color: 'green' },
     { label: 'Unpaid', value: stats.unpaid, icon: Clock, color: 'red' },
     { label: 'Draft', value: stats.draft, icon: FileText, color: 'gray' },
-    { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'green' },
-    { label: 'Pending', value: `$${stats.pendingRevenue.toLocaleString()}`, icon: DollarSign, color: 'amber' },
+    { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'green' },
+    { label: 'Pending', value: `₹${stats.pendingRevenue.toLocaleString()}`, icon: DollarSign, color: 'amber' },
   ]
 
   const colorClasses = {
@@ -183,7 +200,7 @@ export default function BillList() {
           <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
@@ -216,6 +233,22 @@ export default function BillList() {
               <option value="UNPAID">Unpaid</option>
               <option value="FINALIZED">Finalized</option>
               <option value="DRAFT">Draft</option>
+            </select>
+          </div>
+
+          {/* GST Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Invoice Type
+            </label>
+            <select
+              value={gstFilter}
+              onChange={(e) => setGstFilter(e.target.value)}
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none cursor-pointer"
+            >
+              <option value="ALL">All Invoices</option>
+              <option value="GST">GST Only</option>
+              <option value="NON_GST">Non-GST Only</option>
             </select>
           </div>
 
@@ -252,7 +285,7 @@ export default function BillList() {
               className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
             >
               <X className="w-4 h-4" />
-              Clear Filters
+              Clear
             </button>
           </div>
         </div>
@@ -276,22 +309,16 @@ export default function BillList() {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Invoice No.
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Bill Date
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Customer
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Bill Type
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Subtotal
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Tax
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Discount
+                  Type
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Total
@@ -313,6 +340,16 @@ export default function BillList() {
                     onClick={() => navigate(`/customers/${bill.customer_id}`)}
                   >
                     <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-mono text-sm font-medium text-gray-900">
+                          {bill.invoice_number || `#${bill.id.slice(0, 8)}`}
+                        </span>
+                        {bill.is_gst_bill && (
+                          <span className="text-xs text-green-600 font-medium">GST</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-gray-600">
                         <Calendar className="h-4 w-4 text-gray-400" />
                         {new Date(bill.bill_date).toLocaleDateString()}
@@ -333,18 +370,9 @@ export default function BillList() {
                         {bill.bill_type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      ${bill.subtotal.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">
-                      ${bill.tax_amount.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">
-                      ${bill.discount_amount.toLocaleString()}
-                    </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-gray-900">
-                        ${bill.total_amount.toLocaleString()}
+                        ₹{bill.total_amount.toLocaleString()}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -365,7 +393,7 @@ export default function BillList() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Receipt className="w-12 h-12 text-gray-300" />
                       <p className="text-gray-500">No bills found</p>

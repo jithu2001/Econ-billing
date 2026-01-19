@@ -43,3 +43,41 @@ func (r *SettingsRepository) Upsert(settings *models.Settings) error {
 	settings.CreatedAt = existing.CreatedAt
 	return r.db.Save(settings).Error
 }
+
+// GetAndIncrementGSTInvoiceNumber atomically gets the next GST invoice number and increments it
+func (r *SettingsRepository) GetAndIncrementGSTInvoiceNumber() (prefix string, number int, err error) {
+	var settings models.Settings
+
+	err = r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&settings).Error; err != nil {
+			return err
+		}
+
+		prefix = settings.GSTInvoicePrefix
+		number = settings.GSTInvoiceNextNumber
+
+		// Increment the number
+		return tx.Model(&settings).Update("gst_invoice_next_number", settings.GSTInvoiceNextNumber+1).Error
+	})
+
+	return prefix, number, err
+}
+
+// GetAndIncrementNonGSTInvoiceNumber atomically gets the next Non-GST invoice number and increments it
+func (r *SettingsRepository) GetAndIncrementNonGSTInvoiceNumber() (prefix string, number int, err error) {
+	var settings models.Settings
+
+	err = r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&settings).Error; err != nil {
+			return err
+		}
+
+		prefix = settings.NonGSTInvoicePrefix
+		number = settings.NonGSTInvoiceNextNumber
+
+		// Increment the number
+		return tx.Model(&settings).Update("non_gst_invoice_next_number", settings.NonGSTInvoiceNextNumber+1).Error
+	})
+
+	return prefix, number, err
+}

@@ -69,6 +69,8 @@ export interface Bill {
   reservation_id?: string
   bill_type: 'ROOM' | 'WALK_IN' | 'FOOD' | 'MANUAL'
   bill_date: string
+  invoice_number: string
+  is_gst_bill: boolean
   subtotal: number
   tax_amount: number
   discount_amount: number
@@ -100,6 +102,10 @@ export interface Settings {
   gst_number: string
   state_name: string
   state_code: string
+  gst_invoice_prefix: string
+  gst_invoice_next_number: number
+  non_gst_invoice_prefix: string
+  non_gst_invoice_next_number: number
   created_at?: string
   updated_at?: string
 }

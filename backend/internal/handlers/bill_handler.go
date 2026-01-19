@@ -22,6 +22,7 @@ type CreateBillRequest struct {
 	ReservationID  *uuid.UUID              `json:"reservation_id"`
 	BillType       models.BillType         `json:"bill_type" binding:"required"`
 	BillDate       string                  `json:"bill_date" binding:"required"`
+	IsGSTBill      bool                    `json:"is_gst_bill"`
 	Subtotal       float64                 `json:"subtotal"`
 	TaxAmount      float64                 `json:"tax_amount"`
 	DiscountAmount float64                 `json:"discount_amount"`
@@ -45,6 +46,7 @@ func (h *BillHandler) Create(c *gin.Context) {
 		ReservationID:  req.ReservationID,
 		BillType:       req.BillType,
 		BillDate:       req.BillDate,
+		IsGSTBill:      req.IsGSTBill,
 		Subtotal:       req.Subtotal,
 		TaxAmount:      req.TaxAmount,
 		DiscountAmount: req.DiscountAmount,

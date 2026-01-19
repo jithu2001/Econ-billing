@@ -83,15 +83,15 @@ const BillPrint = forwardRef<HTMLDivElement, BillPrintProps>(({ bill, customer, 
 
         {/* Bill Title */}
         <div className="text-center py-2 border-b border-black bg-gray-100">
-          <h2 className="text-base font-bold">BILL / INVOICE</h2>
+          <h2 className="text-base font-bold">{bill.is_gst_bill ? 'TAX INVOICE' : 'BILL / INVOICE'}</h2>
         </div>
 
         {/* Bill Details Row */}
         <div className="grid grid-cols-2 border-b border-black">
           <div className="p-3 border-r border-black">
             <div className="grid grid-cols-2 gap-y-1">
-              <span className="font-semibold">Bill No.</span>
-              <span>: {billNumber}</span>
+              <span className="font-semibold">Invoice No.</span>
+              <span>: {bill.invoice_number || billNumber}</span>
               <span className="font-semibold">Name</span>
               <span>: {customer?.full_name || 'Guest'}</span>
               <span className="font-semibold">Phone</span>

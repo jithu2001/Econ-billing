@@ -14,12 +14,16 @@ interface BillViewModalProps {
 export default function BillViewModal({ open, onOpenChange, bill }: BillViewModalProps) {
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [settings, setSettings] = useState<Settings>({
-    lodge_name: 'Trinity Lodge',
+    lodge_name: 'Econ',
     address: '',
     phone: '',
     gst_number: '',
     state_name: '',
     state_code: '',
+    gst_invoice_prefix: 'GST',
+    gst_invoice_next_number: 1,
+    non_gst_invoice_prefix: 'INV',
+    non_gst_invoice_next_number: 1,
   })
   const [loading, setLoading] = useState(false)
   const printRef = useRef<HTMLDivElement>(null)
@@ -85,8 +89,10 @@ export default function BillViewModal({ open, onOpenChange, bill }: BillViewModa
                     <FileText className="w-5 h-5 text-gray-600" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Bill Invoice</h2>
-                    <p className="text-sm text-gray-500">#{bill.id.slice(0, 8)}</p>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {bill.is_gst_bill ? 'GST Invoice' : 'Invoice'}
+                    </h2>
+                    <p className="text-sm text-gray-500 font-mono">{bill.invoice_number || `#${bill.id.slice(0, 8)}`}</p>
                   </div>
                 </div>
                 <button

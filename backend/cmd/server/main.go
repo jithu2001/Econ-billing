@@ -69,7 +69,7 @@ func main() {
 	customerService := services.NewCustomerService(customerRepo)
 	roomService := services.NewRoomService(roomRepo)
 	reservationService := services.NewReservationService(reservationRepo, roomRepo)
-	billService := services.NewBillService(billRepo)
+	billService := services.NewBillService(billRepo, settingsRepo)
 	paymentService := services.NewPaymentService(paymentRepo, billRepo)
 	settingsService := services.NewSettingsService(settingsRepo)
 

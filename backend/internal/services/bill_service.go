@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"trinity-lodge/internal/models"
 	"trinity-lodge/internal/repository"
 
@@ -8,16 +9,35 @@ import (
 )
 
 type BillService struct {
-	repo *repository.BillRepository
+	repo         *repository.BillRepository
+	settingsRepo *repository.SettingsRepository
 }
 
-func NewBillService(repo *repository.BillRepository) *BillService {
-	return &BillService{repo: repo}
+func NewBillService(repo *repository.BillRepository, settingsRepo *repository.SettingsRepository) *BillService {
+	return &BillService{repo: repo, settingsRepo: settingsRepo}
 }
 
 func (s *BillService) CreateBill(bill *models.Bill, lineItems []models.BillLineItem) error {
+	// Generate invoice number based on whether it's a GST bill
+	var prefix string
+	var number int
+	var err error
+
+	if bill.IsGSTBill {
+		prefix, number, err = s.settingsRepo.GetAndIncrementGSTInvoiceNumber()
+	} else {
+		prefix, number, err = s.settingsRepo.GetAndIncrementNonGSTInvoiceNumber()
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to generate invoice number: %w", err)
+	}
+
+	// Format invoice number: PREFIX-0001
+	bill.InvoiceNumber = fmt.Sprintf("%s-%04d", prefix, number)
+
 	// Create bill first
-	err := s.repo.Create(bill)
+	err = s.repo.Create(bill)
 	if err != nil {
 		return err
 	}
