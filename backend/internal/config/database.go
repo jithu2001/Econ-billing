@@ -11,7 +11,7 @@ import (
 
 func InitDatabase(dbPath string) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Warn),
 	})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)

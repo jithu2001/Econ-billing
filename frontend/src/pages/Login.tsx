@@ -238,7 +238,7 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-gray-400 text-sm">
-            Powered by Trinity Lodge Management System
+            Powered by Econ
           </p>
         </div>
       </div>

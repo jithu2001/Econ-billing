@@ -113,7 +113,7 @@ function createWindow() {
     },
     icon: path.join(__dirname, 'icon.ico'),
     show: false,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#f9fafb',
     autoHideMenuBar: true
   });
 

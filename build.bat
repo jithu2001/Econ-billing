@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo Building Lodge Management System
+echo Building Econ - Lodge Management System
 echo ========================================
 echo.
 
@@ -39,7 +39,7 @@ echo.
 :: Step 3: Build Backend
 echo [3/3] Building backend...
 cd /d "%BACKEND_DIR%"
-go build -o "%BIN_DIR%\lodge-manager.exe" ./cmd/server
+go build -o "%BIN_DIR%\econ.exe" ./cmd/server
 if %errorlevel% neq 0 (
     echo ERROR: Backend build failed!
     exit /b 1
@@ -52,11 +52,11 @@ echo ========================================
 echo Build completed successfully!
 echo ========================================
 echo.
-echo Output: %BIN_DIR%\lodge-manager.exe
+echo Output: %BIN_DIR%\econ.exe
 echo.
 echo To run the application:
 echo   1. Navigate to: %BIN_DIR%
-echo   2. Run: lodge-manager.exe
+echo   2. Run: econ.exe
 echo   3. Open browser: http://localhost:8080
 echo.
 pause
