@@ -24,9 +24,9 @@ func (s *BillService) CreateBill(bill *models.Bill, lineItems []models.BillLineI
 	var err error
 
 	if bill.IsGSTBill {
-		prefix, number, err = s.settingsRepo.GetAndIncrementGSTInvoiceNumber()
+		prefix, number, err = s.settingsRepo.GetAndIncrementGSTInvoiceNumber(bill.UserID)
 	} else {
-		prefix, number, err = s.settingsRepo.GetAndIncrementNonGSTInvoiceNumber()
+		prefix, number, err = s.settingsRepo.GetAndIncrementNonGSTInvoiceNumber(bill.UserID)
 	}
 
 	if err != nil {
@@ -55,26 +55,26 @@ func (s *BillService) CreateBill(bill *models.Bill, lineItems []models.BillLineI
 	return nil
 }
 
-func (s *BillService) GetBillByID(id uuid.UUID) (*models.Bill, error) {
-	return s.repo.FindByID(id)
+func (s *BillService) GetBillByID(id uuid.UUID, userID uuid.UUID) (*models.Bill, error) {
+	return s.repo.FindByID(id, userID)
 }
 
-func (s *BillService) GetBillsByCustomerID(customerID uuid.UUID) ([]models.Bill, error) {
-	return s.repo.FindByCustomerID(customerID)
+func (s *BillService) GetBillsByCustomerID(customerID uuid.UUID, userID uuid.UUID) ([]models.Bill, error) {
+	return s.repo.FindByCustomerID(customerID, userID)
 }
 
-func (s *BillService) GetAllBills() ([]models.Bill, error) {
-	return s.repo.FindAll()
+func (s *BillService) GetAllBills(userID uuid.UUID) ([]models.Bill, error) {
+	return s.repo.FindAll(userID)
 }
 
 func (s *BillService) UpdateBill(bill *models.Bill) error {
 	return s.repo.Update(bill)
 }
 
-func (s *BillService) FinalizeBill(id uuid.UUID) error {
-	return s.repo.UpdateStatus(id, models.BillStatusFinalized)
+func (s *BillService) FinalizeBill(id uuid.UUID, userID uuid.UUID) error {
+	return s.repo.UpdateStatus(id, userID, models.BillStatusFinalized)
 }
 
-func (s *BillService) UpdateBillStatus(id uuid.UUID, status models.BillStatus) error {
-	return s.repo.UpdateStatus(id, status)
+func (s *BillService) UpdateBillStatus(id uuid.UUID, userID uuid.UUID, status models.BillStatus) error {
+	return s.repo.UpdateStatus(id, userID, status)
 }

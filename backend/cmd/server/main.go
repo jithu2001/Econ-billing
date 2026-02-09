@@ -65,7 +65,7 @@ func main() {
 	settingsRepo := repository.NewSettingsRepository(db)
 
 	// Initialize services
-	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
+	authService := services.NewAuthService(userRepo, settingsRepo, cfg.JWTSecret)
 	customerService := services.NewCustomerService(customerRepo)
 	roomService := services.NewRoomService(roomRepo)
 	reservationService := services.NewReservationService(reservationRepo, roomRepo)
@@ -191,12 +191,8 @@ func main() {
 
 	serverURL := fmt.Sprintf("http://localhost:%s", port)
 
-	// Get lodge name for display
-	settings, _ := settingsService.Get()
+	// Display app name
 	appName := "Econ"
-	if settings != nil && settings.LodgeName != "" {
-		appName = settings.LodgeName
-	}
 
 	fmt.Println("╔════════════════════════════════════════════════════════╗")
 	fmt.Printf("║  %s%-50s%s  ║\n", "\033[1;35m", appName, "\033[0m")

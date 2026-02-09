@@ -23,7 +23,7 @@ func NewReservationService(repo *repository.ReservationRepository, roomRepo *rep
 
 func (s *ReservationService) CreateReservation(reservation *models.Reservation) error {
 	// Check if room exists
-	room, err := s.roomRepo.FindRoomByID(reservation.RoomID)
+	room, err := s.roomRepo.FindRoomByID(reservation.RoomID, reservation.UserID)
 	if err != nil {
 		return err
 	}
@@ -31,6 +31,7 @@ func (s *ReservationService) CreateReservation(reservation *models.Reservation) 
 	// Check for overlapping reservations
 	overlapping, err := s.repo.FindOverlappingReservations(
 		reservation.RoomID,
+		reservation.UserID,
 		reservation.CheckInDate,
 		reservation.ExpectedCheckOutDate,
 	)
@@ -56,24 +57,24 @@ func (s *ReservationService) CreateReservation(reservation *models.Reservation) 
 	return nil
 }
 
-func (s *ReservationService) GetAllReservations() ([]models.Reservation, error) {
-	return s.repo.FindAll()
+func (s *ReservationService) GetAllReservations(userID uuid.UUID) ([]models.Reservation, error) {
+	return s.repo.FindAll(userID)
 }
 
-func (s *ReservationService) GetReservationByID(id uuid.UUID) (*models.Reservation, error) {
-	return s.repo.FindByID(id)
+func (s *ReservationService) GetReservationByID(id uuid.UUID, userID uuid.UUID) (*models.Reservation, error) {
+	return s.repo.FindByID(id, userID)
 }
 
-func (s *ReservationService) GetReservationsByCustomerID(customerID uuid.UUID) ([]models.Reservation, error) {
-	return s.repo.FindByCustomerID(customerID)
+func (s *ReservationService) GetReservationsByCustomerID(customerID uuid.UUID, userID uuid.UUID) ([]models.Reservation, error) {
+	return s.repo.FindByCustomerID(customerID, userID)
 }
 
 func (s *ReservationService) UpdateReservation(reservation *models.Reservation) error {
 	return s.repo.Update(reservation)
 }
 
-func (s *ReservationService) CheckInReservation(id uuid.UUID) error {
-	reservation, err := s.repo.FindByID(id)
+func (s *ReservationService) CheckInReservation(id uuid.UUID, userID uuid.UUID) error {
+	reservation, err := s.repo.FindByID(id, userID)
 	if err != nil {
 		return err
 	}
@@ -97,11 +98,11 @@ func (s *ReservationService) CheckInReservation(id uuid.UUID) error {
 	}
 
 	// Update room status to occupied
-	return s.roomRepo.UpdateRoomStatus(reservation.RoomID, models.RoomStatusOccupied)
+	return s.roomRepo.UpdateRoomStatus(reservation.RoomID, userID, models.RoomStatusOccupied)
 }
 
-func (s *ReservationService) CancelReservation(id uuid.UUID) error {
-	reservation, err := s.repo.FindByID(id)
+func (s *ReservationService) CancelReservation(id uuid.UUID, userID uuid.UUID) error {
+	reservation, err := s.repo.FindByID(id, userID)
 	if err != nil {
 		return err
 	}
@@ -118,16 +119,16 @@ func (s *ReservationService) CancelReservation(id uuid.UUID) error {
 	}
 
 	// If room was occupied, make it available again
-	room, err := s.roomRepo.FindRoomByID(reservation.RoomID)
+	room, err := s.roomRepo.FindRoomByID(reservation.RoomID, userID)
 	if err == nil && room.Status == models.RoomStatusOccupied {
-		return s.roomRepo.UpdateRoomStatus(reservation.RoomID, models.RoomStatusAvailable)
+		return s.roomRepo.UpdateRoomStatus(reservation.RoomID, userID, models.RoomStatusAvailable)
 	}
 
 	return nil
 }
 
-func (s *ReservationService) CheckoutReservation(id uuid.UUID, checkoutDate string) error {
-	reservation, err := s.repo.FindByID(id)
+func (s *ReservationService) CheckoutReservation(id uuid.UUID, userID uuid.UUID, checkoutDate string) error {
+	reservation, err := s.repo.FindByID(id, userID)
 	if err != nil {
 		return err
 	}
@@ -141,5 +142,5 @@ func (s *ReservationService) CheckoutReservation(id uuid.UUID, checkoutDate stri
 	}
 
 	// Update room status to available
-	return s.roomRepo.UpdateRoomStatus(reservation.RoomID, models.RoomStatusAvailable)
+	return s.roomRepo.UpdateRoomStatus(reservation.RoomID, userID, models.RoomStatusAvailable)
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -15,14 +15,35 @@ interface CustomerFormProps {
 
 export default function CustomerForm({ open, onOpenChange, onSubmit, customer }: CustomerFormProps) {
   const [formData, setFormData] = useState({
-    full_name: customer?.full_name || '',
-    phone: customer?.phone || '',
-    address: customer?.address || '',
-    id_proof_type: customer?.id_proof_type || 'Aadhar',
-    id_proof_number: customer?.id_proof_number || '',
+    full_name: '',
+    phone: '',
+    address: '',
+    id_proof_type: 'Aadhar',
+    id_proof_number: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // Sync form data when customer prop changes
+  useEffect(() => {
+    if (customer) {
+      setFormData({
+        full_name: customer.full_name,
+        phone: customer.phone,
+        address: customer.address,
+        id_proof_type: customer.id_proof_type,
+        id_proof_number: customer.id_proof_number,
+      })
+    } else {
+      setFormData({
+        full_name: '',
+        phone: '',
+        address: '',
+        id_proof_type: 'Aadhar',
+        id_proof_number: '',
+      })
+    }
+  }, [customer, open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

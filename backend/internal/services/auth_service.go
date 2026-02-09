@@ -10,14 +10,16 @@ import (
 )
 
 type AuthService struct {
-	userRepo  *repository.UserRepository
-	jwtSecret string
+	userRepo     *repository.UserRepository
+	settingsRepo *repository.SettingsRepository
+	jwtSecret    string
 }
 
-func NewAuthService(userRepo *repository.UserRepository, jwtSecret string) *AuthService {
+func NewAuthService(userRepo *repository.UserRepository, settingsRepo *repository.SettingsRepository, jwtSecret string) *AuthService {
 	return &AuthService{
-		userRepo:  userRepo,
-		jwtSecret: jwtSecret,
+		userRepo:     userRepo,
+		settingsRepo: settingsRepo,
+		jwtSecret:    jwtSecret,
 	}
 }
 
@@ -61,6 +63,13 @@ func (s *AuthService) Register(username, password string, role models.UserRole) 
 	err = s.userRepo.Create(user)
 	if err != nil {
 		return "", nil, err
+	}
+
+	// Create default settings for the new user
+	err = s.settingsRepo.CreateDefaultSettings(user.ID)
+	if err != nil {
+		// Log error but don't fail registration - settings can be created later
+		// log.Printf("Failed to create default settings for user %s: %v", user.Username, err)
 	}
 
 	// Generate token for auto-login after registration

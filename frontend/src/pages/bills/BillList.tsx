@@ -336,8 +336,7 @@ export default function BillList() {
                 filteredBills.map((bill) => (
                   <tr
                     key={bill.id}
-                    className="hover:bg-gray-50 transition-all cursor-pointer"
-                    onClick={() => navigate(`/customers/${bill.customer_id}`)}
+                    className="hover:bg-gray-50 transition-all"
                   >
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
@@ -380,13 +379,11 @@ export default function BillList() {
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          navigate(`/customers/${bill.customer_id}`)
-                        }}
+                        onClick={() => handleViewBill(bill)}
                         className="p-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-200 transition-all"
+                        title="View Bill Details"
                       >
-                        <Receipt className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>
@@ -405,6 +402,13 @@ export default function BillList() {
           </table>
         </div>
       </div>
+
+      {/* Bill View Modal */}
+      <BillViewModal
+        open={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        bill={selectedBill}
+      />
     </div>
   )
 }

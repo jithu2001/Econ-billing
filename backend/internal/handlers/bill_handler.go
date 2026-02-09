@@ -18,17 +18,17 @@ func NewBillHandler(service *services.BillService) *BillHandler {
 }
 
 type CreateBillRequest struct {
-	CustomerID     uuid.UUID               `json:"customer_id" binding:"required"`
-	ReservationID  *uuid.UUID              `json:"reservation_id"`
-	BillType       models.BillType         `json:"bill_type" binding:"required"`
-	BillDate       string                  `json:"bill_date" binding:"required"`
-	IsGSTBill      bool                    `json:"is_gst_bill"`
-	Subtotal       float64                 `json:"subtotal"`
-	TaxAmount      float64                 `json:"tax_amount"`
-	DiscountAmount float64                 `json:"discount_amount"`
-	TotalAmount    float64                 `json:"total_amount" binding:"required"`
-	Status         models.BillStatus       `json:"status"`
-	LineItems      []models.BillLineItem   `json:"line_items"`
+	CustomerID     uuid.UUID             `json:"customer_id" binding:"required"`
+	ReservationID  *uuid.UUID            `json:"reservation_id"`
+	BillType       models.BillType       `json:"bill_type" binding:"required"`
+	BillDate       string                `json:"bill_date" binding:"required"`
+	IsGSTBill      bool                  `json:"is_gst_bill"`
+	Subtotal       float64               `json:"subtotal"`
+	TaxAmount      float64               `json:"tax_amount"`
+	DiscountAmount float64               `json:"discount_amount"`
+	TotalAmount    float64               `json:"total_amount" binding:"required"`
+	Status         models.BillStatus     `json:"status"`
+	LineItems      []models.BillLineItem `json:"line_items"`
 }
 
 func (h *BillHandler) Create(c *gin.Context) {
@@ -42,6 +42,7 @@ func (h *BillHandler) Create(c *gin.Context) {
 
 	bill := &models.Bill{
 		ID:             uuid.New(),
+		UserID:         userID.(uuid.UUID),
 		CustomerID:     req.CustomerID,
 		ReservationID:  req.ReservationID,
 		BillType:       req.BillType,
@@ -64,13 +65,15 @@ func (h *BillHandler) Create(c *gin.Context) {
 }
 
 func (h *BillHandler) GetByID(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	bill, err := h.service.GetBillByID(id)
+	bill, err := h.service.GetBillByID(id, userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Bill not found"})
 		return
@@ -80,13 +83,15 @@ func (h *BillHandler) GetByID(c *gin.Context) {
 }
 
 func (h *BillHandler) GetByCustomerID(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	bills, err := h.service.GetBillsByCustomerID(id)
+	bills, err := h.service.GetBillsByCustomerID(id, userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -96,13 +101,15 @@ func (h *BillHandler) GetByCustomerID(c *gin.Context) {
 }
 
 func (h *BillHandler) Finalize(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	if err := h.service.FinalizeBill(id); err != nil {
+	if err := h.service.FinalizeBill(id, userID.(uuid.UUID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

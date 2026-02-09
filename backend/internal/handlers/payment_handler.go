@@ -18,6 +18,8 @@ func NewPaymentHandler(service *services.PaymentService) *PaymentHandler {
 }
 
 func (h *PaymentHandler) Create(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	billID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid bill ID"})
@@ -33,7 +35,7 @@ func (h *PaymentHandler) Create(c *gin.Context) {
 	payment.ID = uuid.New()
 	payment.BillID = billID
 
-	if err := h.service.CreatePayment(&payment); err != nil {
+	if err := h.service.CreatePayment(&payment, userID.(uuid.UUID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

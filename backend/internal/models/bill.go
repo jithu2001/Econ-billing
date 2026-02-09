@@ -24,6 +24,7 @@ const (
 
 type Bill struct {
 	ID             uuid.UUID    `gorm:"type:uuid;primaryKey" json:"id"`
+	UserID         uuid.UUID    `gorm:"type:uuid;not null;index" json:"user_id"`
 	CustomerID     uuid.UUID    `gorm:"type:uuid;not null" json:"customer_id"`
 	Customer       *Customer    `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
 	ReservationID  *uuid.UUID   `gorm:"type:uuid" json:"reservation_id"`

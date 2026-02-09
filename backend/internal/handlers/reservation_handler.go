@@ -18,6 +18,8 @@ func NewReservationHandler(service *services.ReservationService) *ReservationHan
 }
 
 func (h *ReservationHandler) Create(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	var reservation models.Reservation
 	if err := c.ShouldBindJSON(&reservation); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -25,6 +27,7 @@ func (h *ReservationHandler) Create(c *gin.Context) {
 	}
 
 	reservation.ID = uuid.New()
+	reservation.UserID = userID.(uuid.UUID)
 	if err := h.service.CreateReservation(&reservation); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -34,7 +37,9 @@ func (h *ReservationHandler) Create(c *gin.Context) {
 }
 
 func (h *ReservationHandler) GetAll(c *gin.Context) {
-	reservations, err := h.service.GetAllReservations()
+	userID, _ := c.Get("userID")
+
+	reservations, err := h.service.GetAllReservations(userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -44,13 +49,15 @@ func (h *ReservationHandler) GetAll(c *gin.Context) {
 }
 
 func (h *ReservationHandler) GetByID(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	reservation, err := h.service.GetReservationByID(id)
+	reservation, err := h.service.GetReservationByID(id, userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Reservation not found"})
 		return
@@ -60,13 +67,15 @@ func (h *ReservationHandler) GetByID(c *gin.Context) {
 }
 
 func (h *ReservationHandler) CheckIn(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	if err := h.service.CheckInReservation(id); err != nil {
+	if err := h.service.CheckInReservation(id, userID.(uuid.UUID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -75,13 +84,15 @@ func (h *ReservationHandler) CheckIn(c *gin.Context) {
 }
 
 func (h *ReservationHandler) Cancel(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	if err := h.service.CancelReservation(id); err != nil {
+	if err := h.service.CancelReservation(id, userID.(uuid.UUID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -90,6 +101,8 @@ func (h *ReservationHandler) Cancel(c *gin.Context) {
 }
 
 func (h *ReservationHandler) Checkout(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -104,7 +117,7 @@ func (h *ReservationHandler) Checkout(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.CheckoutReservation(id, req.CheckoutDate); err != nil {
+	if err := h.service.CheckoutReservation(id, userID.(uuid.UUID), req.CheckoutDate); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

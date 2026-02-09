@@ -17,6 +17,7 @@ const (
 
 type RoomType struct {
 	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	UserID      uuid.UUID `gorm:"type:uuid;not null;index" json:"user_id"`
 	Name        string    `gorm:"not null" json:"name"`
 	DefaultRate float64   `gorm:"not null" json:"default_rate"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -32,7 +33,8 @@ func (rt *RoomType) BeforeCreate(tx *gorm.DB) error {
 
 type Room struct {
 	ID         uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
-	RoomNumber string     `gorm:"unique;not null" json:"room_number"`
+	UserID     uuid.UUID  `gorm:"type:uuid;not null;index" json:"user_id"`
+	RoomNumber string     `gorm:"not null" json:"room_number"`
 	TypeID     uuid.UUID  `gorm:"type:uuid;not null" json:"type_id"`
 	Type       *RoomType  `gorm:"foreignKey:TypeID" json:"type,omitempty"`
 	Status     RoomStatus `gorm:"type:varchar(20);not null;default:'AVAILABLE'" json:"status"`

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Phone, MapPin, Users, ArrowRight } from 'lucide-react'
+import { Plus, Search, Phone, MapPin, Users, Edit, Eye } from 'lucide-react'
 import CustomerForm from '../../components/customers/CustomerForm'
 import { customerService } from '@/services'
 import type { Customer } from '@/types'
@@ -12,6 +12,7 @@ export default function CustomerList() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | undefined>()
 
   useEffect(() => {
     loadCustomers()
@@ -29,16 +30,7 @@ export default function CustomerList() {
     }
   }
 
-  const handleAddCustomer = async (customerData: any) => {
-    try {
-      await customerService.create(customerData)
-      await loadCustomers()
-      setIsFormOpen(false)
-    } catch (error) {
-      console.error('Failed to add customer:', handleApiError(error))
-      throw error
-    }
-  }
+
 
   const filteredCustomers = customers.filter(customer =>
     customer.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -77,8 +69,21 @@ export default function CustomerList() {
 
       <CustomerForm
         open={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        onSubmit={handleAddCustomer}
+        onOpenChange={(open) => {
+          setIsFormOpen(open)
+          if (!open) setSelectedCustomer(undefined)
+        }}
+        onSubmit={async (data) => {
+          if (selectedCustomer) {
+            await customerService.update(selectedCustomer.id, data)
+          } else {
+            await customerService.create(data)
+          }
+          await loadCustomers()
+          setIsFormOpen(false)
+          setSelectedCustomer(undefined)
+        }}
+        customer={selectedCustomer}
       />
 
       {/* Search & Table Card */}
@@ -153,10 +158,29 @@ export default function CustomerList() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <button className="px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors flex items-center gap-1">
-                        View
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate(`/customers/${customer.id}`)
+                          }}
+                          className="p-2 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedCustomer(customer)
+                            setIsFormOpen(true)
+                          }}
+                          className="p-2 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+                          title="Edit Customer"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -165,6 +189,6 @@ export default function CustomerList() {
           </table>
         </div>
       </div>
-    </div>
+    </div >
   )
 }

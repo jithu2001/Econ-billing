@@ -19,14 +19,14 @@ func NewPaymentService(repo *repository.PaymentRepository, billRepo *repository.
 	}
 }
 
-func (s *PaymentService) CreatePayment(payment *models.Payment) error {
+func (s *PaymentService) CreatePayment(payment *models.Payment, userID uuid.UUID) error {
 	err := s.repo.Create(payment)
 	if err != nil {
 		return err
 	}
 
 	// Get bill to check if fully paid
-	bill, err := s.billRepo.FindByID(payment.BillID)
+	bill, err := s.billRepo.FindByID(payment.BillID, userID)
 	if err != nil {
 		return nil // Payment created successfully, just can't update bill status
 	}
@@ -45,7 +45,7 @@ func (s *PaymentService) CreatePayment(payment *models.Payment) error {
 
 	// Update bill status if fully paid
 	if totalPaid >= bill.TotalAmount {
-		s.billRepo.UpdateStatus(payment.BillID, models.BillStatusPaid)
+		s.billRepo.UpdateStatus(payment.BillID, userID, models.BillStatusPaid)
 	}
 
 	return nil

@@ -20,12 +20,12 @@ func (s *RoomService) CreateRoomType(roomType *models.RoomType) error {
 	return s.repo.CreateRoomType(roomType)
 }
 
-func (s *RoomService) GetAllRoomTypes() ([]models.RoomType, error) {
-	return s.repo.FindAllRoomTypes()
+func (s *RoomService) GetAllRoomTypes(userID uuid.UUID) ([]models.RoomType, error) {
+	return s.repo.FindAllRoomTypes(userID)
 }
 
-func (s *RoomService) GetRoomTypeByID(id uuid.UUID) (*models.RoomType, error) {
-	return s.repo.FindRoomTypeByID(id)
+func (s *RoomService) GetRoomTypeByID(id uuid.UUID, userID uuid.UUID) (*models.RoomType, error) {
+	return s.repo.FindRoomTypeByID(id, userID)
 }
 
 func (s *RoomService) UpdateRoomType(roomType *models.RoomType) error {
@@ -37,18 +37,18 @@ func (s *RoomService) CreateRoom(room *models.Room) error {
 	return s.repo.CreateRoom(room)
 }
 
-func (s *RoomService) GetAllRooms() ([]models.Room, error) {
-	return s.repo.FindAllRooms()
+func (s *RoomService) GetAllRooms(userID uuid.UUID) ([]models.Room, error) {
+	return s.repo.FindAllRooms(userID)
 }
 
-func (s *RoomService) GetRoomByID(id uuid.UUID) (*models.Room, error) {
-	return s.repo.FindRoomByID(id)
+func (s *RoomService) GetRoomByID(id uuid.UUID, userID uuid.UUID) (*models.Room, error) {
+	return s.repo.FindRoomByID(id, userID)
 }
 
 func (s *RoomService) UpdateRoom(room *models.Room) error {
 	return s.repo.UpdateRoom(room)
 }
 
-func (s *RoomService) UpdateRoomStatus(id uuid.UUID, status models.RoomStatus) error {
-	return s.repo.UpdateRoomStatus(id, status)
+func (s *RoomService) UpdateRoomStatus(id uuid.UUID, userID uuid.UUID, status models.RoomStatus) error {
+	return s.repo.UpdateRoomStatus(id, userID, status)
 }

@@ -1,14 +1,39 @@
 import { useState, useEffect } from 'react'
-import { Settings as SettingsIcon, Building2, MapPin, Phone, FileText, Map, Save, CheckCircle, Receipt, Hash } from 'lucide-react'
+import { Settings as SettingsIcon, Building2, MapPin, Phone, FileText, Map, Save, CheckCircle, Receipt, Hash, X, AlertCircle } from 'lucide-react'
 import { settingsService } from '@/services'
 import type { Settings } from '@/types'
 import { handleApiError } from '@/lib/api'
 
+// Toast notification component
+function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 4000)
+    return () => clearTimeout(timer)
+  }, [onClose])
+
+  return (
+    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-lg animate-slide-up ${
+      type === 'success'
+        ? 'bg-gray-900 text-white'
+        : 'bg-red-600 text-white'
+    }`}>
+      {type === 'success' ? (
+        <CheckCircle className="w-5 h-5 text-green-400" />
+      ) : (
+        <AlertCircle className="w-5 h-5" />
+      )}
+      <span className="font-medium">{message}</span>
+      <button onClick={onClose} className="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors">
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  )
+}
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [error, setError] = useState('')
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [settings, setSettings] = useState<Settings>({
     lodge_name: '',
     address: '',
@@ -40,8 +65,7 @@ export default function SettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    setSaved(false)
+    setToast(null)
 
     try {
       setSaving(true)
@@ -57,10 +81,9 @@ export default function SettingsPage() {
         non_gst_invoice_prefix: settings.non_gst_invoice_prefix,
         non_gst_invoice_next_number: settings.non_gst_invoice_next_number,
       })
-      setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
+      setToast({ message: 'Settings saved successfully!', type: 'success' })
     } catch (error) {
-      setError(handleApiError(error))
+      setToast({ message: handleApiError(error), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -81,7 +104,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 bg-gray-50 min-h-screen p-6 max-w-4xl mx-auto">
       {/* Page Header */}
-      <div>
+      <div className="slide-in-left">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-gray-100 rounded-xl">
             <SettingsIcon className="w-6 h-6 text-gray-600" />
@@ -91,25 +114,10 @@ export default function SettingsPage() {
         <p className="text-gray-500">Configure your lodge details for bill generation</p>
       </div>
 
-      {/* Success Message */}
-      {saved && (
-        <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
-          <CheckCircle className="w-5 h-5 text-green-600" />
-          <span className="text-green-600 font-medium">Settings saved successfully!</span>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-          <span className="text-red-600">{error}</span>
-        </div>
-      )}
-
       {/* Settings Form */}
       <form onSubmit={handleSave} className="space-y-6">
         {/* Lodge Information */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.1s', opacity: 0 }}>
           <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
             <Building2 className="w-5 h-5 text-gray-600" />
             Lodge Information
@@ -179,7 +187,7 @@ export default function SettingsPage() {
         </div>
 
         {/* State Information */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.2s', opacity: 0 }}>
           <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
             <Map className="w-5 h-5 text-gray-600" />
             State Information
@@ -217,7 +225,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Invoice Number Configuration */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
           <h2 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
             <Receipt className="w-5 h-5 text-gray-600" />
             Invoice Number Configuration
@@ -304,7 +312,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
           <button
             type="submit"
             disabled={saving}
@@ -324,6 +332,32 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Animation styles */}
+      <style>{`
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
     </div>
   )
 }

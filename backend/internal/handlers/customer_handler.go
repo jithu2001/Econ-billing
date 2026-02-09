@@ -18,6 +18,8 @@ func NewCustomerHandler(service *services.CustomerService) *CustomerHandler {
 }
 
 func (h *CustomerHandler) Create(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	var customer models.Customer
 	if err := c.ShouldBindJSON(&customer); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -25,6 +27,7 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 	}
 
 	customer.ID = uuid.New()
+	customer.UserID = userID.(uuid.UUID)
 	if err := h.service.CreateCustomer(&customer); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -34,7 +37,9 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 }
 
 func (h *CustomerHandler) GetAll(c *gin.Context) {
-	customers, err := h.service.GetAllCustomers()
+	userID, _ := c.Get("userID")
+
+	customers, err := h.service.GetAllCustomers(userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -44,13 +49,15 @@ func (h *CustomerHandler) GetAll(c *gin.Context) {
 }
 
 func (h *CustomerHandler) GetByID(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	customer, err := h.service.GetCustomerByID(id)
+	customer, err := h.service.GetCustomerByID(id, userID.(uuid.UUID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
 		return
@@ -60,6 +67,8 @@ func (h *CustomerHandler) GetByID(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Update(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -73,6 +82,7 @@ func (h *CustomerHandler) Update(c *gin.Context) {
 	}
 
 	customer.ID = id
+	customer.UserID = userID.(uuid.UUID)
 	if err := h.service.UpdateCustomer(&customer); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -82,13 +92,15 @@ func (h *CustomerHandler) Update(c *gin.Context) {
 }
 
 func (h *CustomerHandler) Delete(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	if err := h.service.DeleteCustomer(id); err != nil {
+	if err := h.service.DeleteCustomer(id, userID.(uuid.UUID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

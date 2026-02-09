@@ -55,147 +55,135 @@ function numberToWords(num: number): string {
 const BillPrint = forwardRef<HTMLDivElement, BillPrintProps>(({ bill, customer, settings, billNumber = 1 }, ref) => {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
-    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
-  const totalInWords = `INR ${numberToWords(Math.floor(bill.total_amount))} Only`
+  const totalInWords = `Rupees ${numberToWords(Math.floor(bill.total_amount))} Only`
 
   return (
-    <div ref={ref} className="bill-print-container bg-white text-black p-8 w-[210mm] min-h-[297mm] font-sans text-sm">
-      {/* Header */}
-      <div className="border-2 border-black">
-        {/* Lodge Info Header */}
-        <div className="text-center py-4 border-b-2 border-black">
-          <h1 className="text-xl font-bold uppercase tracking-wide">{settings.lodge_name || 'Lodge Name'}</h1>
+    <div ref={ref} className="bill-print-container bg-white text-black p-10 w-[210mm] min-h-[297mm]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      {/* Header Section */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{settings.lodge_name || 'Lodge Name'}</h1>
           {settings.address && (
-            <p className="text-xs mt-1">{settings.address}</p>
-          )}
-          {settings.gst_number && (
-            <p className="text-xs mt-1">GSTIN/UIN: {settings.gst_number}</p>
-          )}
-          {settings.state_name && settings.state_code && (
-            <p className="text-xs">State Name: {settings.state_name}, Code: {settings.state_code}</p>
+            <p className="text-sm text-gray-600 mt-1 max-w-xs">{settings.address}</p>
           )}
           {settings.phone && (
-            <p className="text-xs">Phone: {settings.phone}</p>
+            <p className="text-sm text-gray-600">Tel: {settings.phone}</p>
           )}
         </div>
-
-        {/* Bill Title */}
-        <div className="text-center py-2 border-b border-black bg-gray-100">
-          <h2 className="text-base font-bold">{bill.is_gst_bill ? 'TAX INVOICE' : 'BILL / INVOICE'}</h2>
-        </div>
-
-        {/* Bill Details Row */}
-        <div className="grid grid-cols-2 border-b border-black">
-          <div className="p-3 border-r border-black">
-            <div className="grid grid-cols-2 gap-y-1">
-              <span className="font-semibold">Invoice No.</span>
-              <span>: {bill.invoice_number || billNumber}</span>
-              <span className="font-semibold">Name</span>
-              <span>: {customer?.full_name || 'Guest'}</span>
-              <span className="font-semibold">Phone</span>
-              <span>: {customer?.phone || '-'}</span>
-              <span className="font-semibold">Address</span>
-              <span>: {customer?.address || '-'}</span>
-            </div>
+        <div className="text-right">
+          <div className="inline-block px-4 py-1.5 bg-gray-900 text-white text-sm font-medium rounded">
+            {bill.is_gst_bill ? 'TAX INVOICE' : 'INVOICE'}
           </div>
-          <div className="p-3">
-            <div className="grid grid-cols-2 gap-y-1">
-              <span className="font-semibold">Bill Date</span>
-              <span>: {formatDate(bill.bill_date)}</span>
-              <span className="font-semibold">Bill Type</span>
-              <span>: {bill.bill_type}</span>
-              <span className="font-semibold">Status</span>
-              <span>: {bill.status}</span>
-              {customer?.id_proof_type && (
-                <>
-                  <span className="font-semibold">ID Type</span>
-                  <span>: {customer.id_proof_type}</span>
-                </>
-              )}
-            </div>
-          </div>
+          <p className="text-2xl font-bold text-gray-900 mt-3">{bill.invoice_number || `#${billNumber}`}</p>
+          <p className="text-sm text-gray-500">{formatDate(bill.bill_date)}</p>
         </div>
+      </div>
 
-        {/* Items Table */}
-        <table className="w-full border-collapse">
+      {/* GST Info - Subtle line */}
+      {settings.gst_number && (
+        <div className="text-xs text-gray-500 mb-6 pb-6 border-b border-gray-200">
+          GSTIN: {settings.gst_number}
+          {settings.state_name && settings.state_code && (
+            <span className="ml-4">State: {settings.state_name} ({settings.state_code})</span>
+          )}
+        </div>
+      )}
+
+      {/* Bill To Section */}
+      <div className="mb-8">
+        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Bill To</p>
+        <h3 className="text-lg font-semibold text-gray-900">{customer?.full_name || 'Guest'}</h3>
+        {customer?.phone && (
+          <p className="text-sm text-gray-600">{customer.phone}</p>
+        )}
+        {customer?.address && (
+          <p className="text-sm text-gray-600">{customer.address}</p>
+        )}
+        {customer?.id_proof_type && customer?.id_proof_number && (
+          <p className="text-xs text-gray-400 mt-1">{customer.id_proof_type}: {customer.id_proof_number}</p>
+        )}
+      </div>
+
+      {/* Items Table - Clean Design */}
+      <div className="mb-8">
+        <table className="w-full">
           <thead>
-            <tr className="bg-gray-100">
-              <th className="border-b border-r border-black p-2 text-left w-16">SR.NO.</th>
-              <th className="border-b border-r border-black p-2 text-left">PARTICULARS</th>
-              <th className="border-b border-black p-2 text-right w-32">AMOUNT</th>
+            <tr className="border-b-2 border-gray-900">
+              <th className="py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
+              <th className="py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Amount</th>
             </tr>
           </thead>
           <tbody>
             {bill.line_items && bill.line_items.length > 0 ? (
               bill.line_items.map((item, idx) => (
-                <tr key={item.id}>
-                  <td className="border-b border-r border-black p-2">{idx + 1}</td>
-                  <td className="border-b border-r border-black p-2 font-medium">{item.description}</td>
-                  <td className="border-b border-black p-2 text-right">{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <tr key={item.id} className="border-b border-gray-100">
+                  <td className="py-4 text-sm text-gray-400">{String(idx + 1).padStart(2, '0')}</td>
+                  <td className="py-4 text-sm text-gray-900 font-medium">{item.description}</td>
+                  <td className="py-4 text-sm text-gray-900 text-right font-medium">
+                    {item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </td>
                 </tr>
               ))
             ) : (
-              <>
-                <tr>
-                  <td className="border-b border-r border-black p-2">1</td>
-                  <td className="border-b border-r border-black p-2 font-medium">Room Charges</td>
-                  <td className="border-b border-black p-2 text-right">{bill.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                </tr>
-              </>
-            )}
-            {/* Empty rows for spacing */}
-            {Array.from({ length: Math.max(0, 8 - (bill.line_items?.length || 1)) }).map((_, idx) => (
-              <tr key={`empty-${idx}`}>
-                <td className="border-b border-r border-black p-2">&nbsp;</td>
-                <td className="border-b border-r border-black p-2">&nbsp;</td>
-                <td className="border-b border-black p-2">&nbsp;</td>
+              <tr className="border-b border-gray-100">
+                <td className="py-4 text-sm text-gray-400">01</td>
+                <td className="py-4 text-sm text-gray-900 font-medium">Room Charges</td>
+                <td className="py-4 text-sm text-gray-900 text-right font-medium">
+                  {bill.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
+      </div>
 
-        {/* Amount Summary */}
-        <div className="grid grid-cols-2 border-t-2 border-black">
-          <div className="p-3 border-r border-black">
-            <p className="text-xs font-semibold">Amount in words:</p>
-            <p className="font-bold mt-1">{totalInWords}</p>
+      {/* Amount Summary - Right Aligned */}
+      <div className="flex justify-end mb-8">
+        <div className="w-72">
+          <div className="flex justify-between py-2 text-sm">
+            <span className="text-gray-500">Subtotal</span>
+            <span className="text-gray-900">{bill.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
-          <div>
-            <div className="flex justify-between p-2 border-b border-black">
-              <span>Subtotal</span>
-              <span>{bill.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          {bill.tax_amount > 0 && (
+            <div className="flex justify-between py-2 text-sm">
+              <span className="text-gray-500">GST</span>
+              <span className="text-gray-900">{bill.tax_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
-            {bill.tax_amount > 0 && (
-              <div className="flex justify-between p-2 border-b border-black">
-                <span>Tax (GST)</span>
-                <span>{bill.tax_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-            )}
-            {bill.discount_amount > 0 && (
-              <div className="flex justify-between p-2 border-b border-black">
-                <span>Discount</span>
-                <span>-{bill.discount_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-            )}
-            <div className="flex justify-between p-2 font-bold bg-gray-100">
-              <span>Grand Total</span>
-              <span>₹{bill.total_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          )}
+          {bill.discount_amount > 0 && (
+            <div className="flex justify-between py-2 text-sm">
+              <span className="text-gray-500">Discount</span>
+              <span className="text-green-600">-{bill.discount_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
+          )}
+          <div className="flex justify-between py-3 mt-2 border-t-2 border-gray-900">
+            <span className="text-base font-bold text-gray-900">Total</span>
+            <span className="text-xl font-bold text-gray-900">
+              ₹{bill.total_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </span>
           </div>
         </div>
+      </div>
 
-        {/* Footer */}
-        <div className="border-t-2 border-black p-4">
-          <div className="flex justify-between items-end">
-            <div className="text-xs text-gray-600">
-              <p>E. & O. E.</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs mb-8">For {settings.lodge_name || 'Lodge'}</p>
-              <p className="text-xs border-t border-black pt-1">Authorized Signature</p>
-            </div>
+      {/* Amount in Words */}
+      <div className="bg-gray-50 rounded-lg px-4 py-3 mb-12">
+        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Amount in Words</p>
+        <p className="text-sm font-medium text-gray-900">{totalInWords}</p>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-between items-end mt-auto pt-8 border-t border-gray-200">
+        <div className="text-xs text-gray-400">
+          <p>Thank you for your business</p>
+          <p className="mt-1">E. & O.E.</p>
+        </div>
+        <div className="text-right">
+          <div className="w-48 pt-12 border-t border-gray-300">
+            <p className="text-xs text-gray-500">Authorized Signature</p>
           </div>
         </div>
       </div>
@@ -206,7 +194,7 @@ const BillPrint = forwardRef<HTMLDivElement, BillPrintProps>(({ bill, customer, 
           .bill-print-container {
             width: 210mm;
             min-height: 297mm;
-            padding: 10mm;
+            padding: 15mm;
             margin: 0;
             background: white !important;
             -webkit-print-color-adjust: exact;
