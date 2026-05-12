@@ -1,27 +1,38 @@
+// app.go
 package main
 
 import (
 	"context"
-	"fmt"
+
+	rt "github.com/wailsapp/wails/v2/pkg/runtime"
+	"gorm.io/gorm"
 )
 
-// App struct
 type App struct {
 	ctx context.Context
+	db  *gorm.DB
 }
 
-// NewApp creates a new App application struct
-func NewApp() *App {
-	return &App{}
-}
+func NewApp(db *gorm.DB) *App { return &App{db: db} }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
-func (a *App) startup(ctx context.Context) {
+func (a *App) OnStartup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) OnShutdown(ctx context.Context) {
+	// DB close is handled in main() via defer
+}
+
+func (a *App) DB() *gorm.DB { return a.db }
+
+// Window controls exposed to JS:
+func (a *App) MinimizeWindow()  { rt.WindowMinimise(a.ctx) }
+func (a *App) MaximizeWindow()  { rt.WindowToggleMaximise(a.ctx) }
+func (a *App) CloseWindow()     { rt.Quit(a.ctx) }
+
+// ShowSaveDialog returns the selected file path (empty if cancelled).
+func (a *App) ShowSaveDialog(defaultName string) (string, error) {
+	return rt.SaveFileDialog(a.ctx, rt.SaveDialogOptions{
+		DefaultFilename: defaultName,
+	})
 }
