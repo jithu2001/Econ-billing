@@ -1,8 +1,8 @@
 package services
 
 import (
-	"trinity-lodge/internal/models"
-	"trinity-lodge/internal/repository"
+	"github.com/econ/econ/internal/models"
+	"github.com/econ/econ/internal/repository"
 
 	"github.com/google/uuid"
 )
