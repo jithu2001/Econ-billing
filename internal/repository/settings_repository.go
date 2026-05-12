@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"trinity-lodge/internal/models"
+	"github.com/econ/econ/internal/models"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
