@@ -4,8 +4,10 @@ package main
 import (
 	"embed"
 	"log"
+	"os"
 
 	"github.com/econ/econ/internal/database"
+	"github.com/econ/econ/internal/session"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -23,6 +25,12 @@ func main() {
 	defer database.Close(db)
 
 	app := NewApp(db)
+	sess := session.New()
+
+	regToken := os.Getenv("REGISTRATION_TOKEN")
+	if regToken == "" {
+		regToken = "919847073856"
+	}
 
 	err = wails.Run(&options.App{
 		Title:            "Econ",
@@ -40,10 +48,7 @@ func main() {
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
 		},
-		Bind: []interface{}{
-			app,
-			// Domain bindings appended in Task 14
-		},
+		Bind: app.BuildBindings(sess, regToken),
 	})
 	if err != nil { log.Fatalf("wails: %v", err) }
 }
