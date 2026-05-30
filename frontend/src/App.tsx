@@ -9,6 +9,7 @@ import ReservationList from './pages/reservations/ReservationList'
 import BillList from './pages/bills/BillList'
 import SettingsPage from './pages/settings/Settings'
 import Login from './pages/Login'
+import TitleBar from './components/layout/TitleBar'
 import { authService } from './services/auth.service'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -23,9 +24,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
+    <div className="flex flex-col h-screen overflow-hidden">
+      <TitleBar />
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
         <Route
           path="/"
           element={
@@ -42,9 +46,11 @@ function App() {
           <Route path="reservations" element={<ReservationList />} />
           <Route path="bills" element={<BillList />} />
           <Route path="settings" element={<SettingsPage />} />
-        </Route>
-      </Routes>
-    </Router>
+          </Route>
+          </Routes>
+        </Router>
+      </div>
+    </div>
   )
 }
 
