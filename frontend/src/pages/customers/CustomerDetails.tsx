@@ -7,7 +7,7 @@ import PaymentForm from '../../components/payments/PaymentForm'
 import ReservationForm from '../../components/reservations/ReservationForm'
 import { type BillData } from '../../components/bills/BillEditor'
 import { customerService, reservationService, billService, roomService } from '@/services'
-import { handleApiError } from '@/lib/api'
+import { handleApiError } from '@/lib/bindings'
 import type { Bill, Customer, Reservation, Room, Payment } from '../../types'
 
 export default function CustomerDetails() {
@@ -128,7 +128,7 @@ export default function CustomerDetails() {
 
       await billService.createPayment(selectedBill.id, {
         amount: payment.amount,
-        payment_method: payment.payment_method as 'CASH' | 'CARD' | 'UPI',
+        payment_method: payment.payment_method,
         payment_date: payment.payment_date,
       })
 

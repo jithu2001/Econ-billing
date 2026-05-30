@@ -1,7 +1,7 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '@/services/auth.service'
-import { handleApiError } from '@/lib/api'
+import { handleApiError } from '@/lib/bindings'
 import { Building2, Eye, EyeOff } from 'lucide-react'
 
 export default function Login() {

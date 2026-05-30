@@ -1,40 +1,23 @@
-import { apiClient } from '@/lib/api';
-import type { Customer } from '@/types';
+// frontend/src/services/customer.service.ts
+import { CustomerAPI } from '@/lib/bindings'
+import type { Customer } from '@/types'
 
 export interface CreateCustomerRequest {
-  full_name: string;
-  phone: string;
-  address?: string;
-  id_proof_type?: string;
-  id_proof_number?: string;
+  full_name: string; phone: string; address?: string;
+  id_proof_type?: string; id_proof_number?: string;
 }
 
-export interface UpdateCustomerRequest extends CreateCustomerRequest {
-  id: string;
-}
+const toInput = (d: CreateCustomerRequest) => ({
+  full_name: d.full_name, phone: d.phone,
+  address: d.address ?? '',
+  id_proof_type: d.id_proof_type ?? '',
+  id_proof_number: d.id_proof_number ?? '',
+})
 
 export const customerService = {
-  async getAll(): Promise<Customer[]> {
-    const response = await apiClient.get<Customer[]>('/api/customers');
-    return response.data;
-  },
-
-  async getById(id: string): Promise<Customer> {
-    const response = await apiClient.get<Customer>(`/api/customers/${id}`);
-    return response.data;
-  },
-
-  async create(data: CreateCustomerRequest): Promise<Customer> {
-    const response = await apiClient.post<Customer>('/api/customers', data);
-    return response.data;
-  },
-
-  async update(id: string, data: CreateCustomerRequest): Promise<Customer> {
-    const response = await apiClient.put<Customer>(`/api/customers/${id}`, data);
-    return response.data;
-  },
-
-  async delete(id: string): Promise<void> {
-    await apiClient.delete(`/api/customers/${id}`);
-  },
-};
+  getAll: () => CustomerAPI.GetAll() as unknown as Promise<Customer[]>,
+  getById: (id: string) => CustomerAPI.GetByID(id) as unknown as Promise<Customer>,
+  create: (data: CreateCustomerRequest) => CustomerAPI.Create(toInput(data)) as unknown as Promise<Customer>,
+  update: (id: string, data: CreateCustomerRequest) => CustomerAPI.Update(id, toInput(data)) as unknown as Promise<Customer>,
+  delete: (id: string) => CustomerAPI.Delete(id) as unknown as Promise<void>,
+}

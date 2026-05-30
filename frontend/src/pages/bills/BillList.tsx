@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { Receipt, Calendar, Filter, Search, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X, Eye } from 'lucide-react'
 import { billService, customerService } from '@/services'
 import type { Bill } from '@/types'
-import { handleApiError } from '@/lib/api'
+import { handleApiError } from '@/lib/bindings'
 import BillViewModal from '@/components/bills/BillViewModal'
 
 const getStatusBadge = (status: Bill['status']) => {
@@ -145,8 +145,8 @@ export default function BillList() {
     { label: 'Paid', value: stats.paid, icon: CheckCircle, color: 'green' },
     { label: 'Unpaid', value: stats.unpaid, icon: Clock, color: 'red' },
     { label: 'Draft', value: stats.draft, icon: FileText, color: 'gray' },
-    { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'green' },
-    { label: 'Pending', value: `₹${stats.pendingRevenue.toLocaleString()}`, icon: DollarSign, color: 'amber' },
+    { label: 'Total Revenue', value: `â‚¹${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'green' },
+    { label: 'Pending', value: `â‚¹${stats.pendingRevenue.toLocaleString()}`, icon: DollarSign, color: 'amber' },
   ]
 
   const colorClasses = {
@@ -371,7 +371,7 @@ export default function BillList() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-gray-900">
-                        ₹{bill.total_amount.toLocaleString()}
+                        â‚¹{bill.total_amount.toLocaleString()}
                       </span>
                     </td>
                     <td className="px-6 py-4">

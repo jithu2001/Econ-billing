@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Phone, MapPin, Users, Edit, Eye } from 'lucide-react'
 import CustomerForm from '../../components/customers/CustomerForm'
 import { customerService } from '@/services'
 import type { Customer } from '@/types'
-import { handleApiError } from '@/lib/api'
+import { handleApiError } from '@/lib/bindings'
 
 export default function CustomerList() {
   const navigate = useNavigate()

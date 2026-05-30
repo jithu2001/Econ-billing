@@ -27,8 +27,6 @@ func (a *App) OnShutdown(ctx context.Context) {
 	// DB close is handled in main() via defer
 }
 
-func (a *App) DB() *gorm.DB { return a.db }
-
 // Window controls exposed to JS:
 func (a *App) MinimizeWindow()  { rt.WindowMinimise(a.ctx) }
 func (a *App) MaximizeWindow()  { rt.WindowToggleMaximise(a.ctx) }
@@ -41,8 +39,10 @@ func (a *App) ShowSaveDialog(defaultName string) (string, error) {
 	})
 }
 
-// BuildBindings returns the slice for options.App.Bind. Caller passes Session.
-func (a *App) BuildBindings(sess *session.Session, registrationToken string) []interface{} {
+// buildBindings returns the slice for options.App.Bind. Caller passes Session.
+// Unexported so the Wails generator does not walk *session.Session / *gorm.DB
+// into the generated TypeScript models.
+func (a *App) buildBindings(sess *session.Session, registrationToken string) []interface{} {
 	db := a.db
 	userRepo := repository.NewUserRepository(db)
 	custRepo := repository.NewCustomerRepository(db)

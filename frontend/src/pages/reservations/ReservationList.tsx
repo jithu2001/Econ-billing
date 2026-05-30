@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Calendar, Building2, LogIn, LogOut, X, Clock, Receipt } from 'lucide-react'
 import ReservationForm from '../../components/reservations/ReservationForm'
 import { reservationService, customerService, roomService } from '@/services'
 import type { Reservation, Customer, Room } from '../../types'
-import { handleApiError } from '@/lib/api'
+import { handleApiError } from '@/lib/bindings'
 
 const getStatusBadge = (status: Reservation['status']) => {
   const styles = {

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { Settings as SettingsIcon, Building2, MapPin, Phone, FileText, Map, Save, CheckCircle, Receipt, Hash, X, AlertCircle } from 'lucide-react'
 import { settingsService } from '@/services'
 import type { Settings } from '@/types'
-import { handleApiError } from '@/lib/api'
+import { handleApiError } from '@/lib/bindings'
 
 // Toast notification component
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {

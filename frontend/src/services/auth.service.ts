@@ -1,57 +1,40 @@
-import { apiClient } from '@/lib/api';
+// frontend/src/services/auth.service.ts
+import { AuthAPI } from '@/lib/bindings'
 
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
+export interface LoginRequest { username: string; password: string }
 export interface RegisterRequest {
-  username: string;
-  password: string;
-  role: 'ADMIN' | 'STAFF';
-  registration_token: string;
+  username: string; password: string; role: 'ADMIN' | 'STAFF'; registration_token: string
 }
+export interface User { id: string; username: string; role: 'ADMIN' | 'STAFF' }
+export interface AuthResponse { user: User }
 
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    username: string;
-    role: string;
-  };
-}
+const USER_KEY = 'econ_user_cache'
 
 export const authService = {
   async login(data: LoginRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/api/auth/login', data);
-    if (response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
-    return response.data;
+    const res = (await AuthAPI.Login(data.username, data.password)) as unknown as AuthResponse
+    localStorage.setItem(USER_KEY, JSON.stringify(res.user))
+    return res
   },
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/api/auth/register', data);
-    if (response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
-    return response.data;
+    const res = (await AuthAPI.Register(data.username, data.password, data.role, data.registration_token)) as unknown as AuthResponse
+    localStorage.setItem(USER_KEY, JSON.stringify(res.user))
+    return res
   },
 
-  logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    window.location.href = '/login';
+  async logout() {
+    await AuthAPI.Logout()
+    localStorage.removeItem(USER_KEY)
+    window.location.hash = '#/login'
   },
 
-  getCurrentUser() {
-    const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+  getCurrentUser(): User | null {
+    const raw = localStorage.getItem(USER_KEY)
+    return raw ? JSON.parse(raw) : null
   },
 
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem('auth_token');
+  async isAuthenticated(): Promise<boolean> {
+    return await AuthAPI.IsAuthenticated()
   },
-};
+}

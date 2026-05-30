@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from './components/layout/MainLayout'
 import Dashboard from './pages/dashboard/Dashboard'
@@ -11,8 +12,13 @@ import Login from './pages/Login'
 import { authService } from './services/auth.service'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = authService.isAuthenticated()
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  const [state, setState] = useState<'pending' | 'authed' | 'guest'>('pending')
+  useEffect(() => {
+    authService.isAuthenticated().then(ok => setState(ok ? 'authed' : 'guest'))
+  }, [])
+  if (state === 'pending') return null
+  if (state === 'guest') return <Navigate to="/login" replace />
+  return <>{children}</>
 }
 
 function App() {

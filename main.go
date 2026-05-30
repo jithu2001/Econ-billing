@@ -48,7 +48,7 @@ func main() {
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
 		},
-		Bind: app.BuildBindings(sess, regToken),
+		Bind: app.buildBindings(sess, regToken),
 	})
 	if err != nil { log.Fatalf("wails: %v", err) }
 }
