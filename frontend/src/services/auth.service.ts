@@ -26,7 +26,6 @@ export const authService = {
   async logout() {
     await AuthAPI.Logout()
     localStorage.removeItem(USER_KEY)
-    window.location.hash = '#/login'
   },
 
   getCurrentUser(): User | null {

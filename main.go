@@ -40,6 +40,7 @@ func main() {
 		MinHeight:        768,
 		Frameless:        true,
 		DisableResize:    false,
+		WindowStartState: options.Maximised,
 		BackgroundColour: &options.RGBA{R: 249, G: 250, B: 251, A: 1},
 		AssetServer:      &assetserver.Options{Assets: assets},
 		OnStartup:        app.OnStartup,

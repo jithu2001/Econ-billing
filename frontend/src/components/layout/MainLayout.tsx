@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Users, Building2, Calendar, Receipt, LogOut, Settings } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { authService } from '@/services/auth.service'
@@ -16,6 +16,7 @@ const navigation = [
 
 export default function MainLayout() {
   const location = useLocation()
+  const navigate = useNavigate()
   const user = authService.getCurrentUser()
   const [lodgeName, setLodgeName] = useState('Econ')
 
@@ -34,8 +35,9 @@ export default function MainLayout() {
     }
   }
 
-  const handleLogout = () => {
-    authService.logout()
+  const handleLogout = async () => {
+    await authService.logout()
+    navigate('/login', { replace: true })
   }
 
   return (
