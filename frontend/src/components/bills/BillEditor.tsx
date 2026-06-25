@@ -5,6 +5,7 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card'
 import type { BillLineItem, Reservation } from '../../types'
+import { gstSplit, formatRate } from '@/lib/gst'
 
 interface BillEditorProps {
   billType: 'ROOM' | 'WALK_IN' | 'FOOD' | 'MANUAL'
@@ -27,6 +28,8 @@ export interface BillData {
   checkInDate?: string
   checkOutDate?: string
   numberOfDays?: number
+  arrivalDateTime?: string
+  departureDateTime?: string
 }
 
 export default function BillEditor({ billType, reservationId, reservation, onSave, onCancel }: BillEditorProps) {
@@ -40,6 +43,21 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
   const [enableGST, setEnableGST] = useState(true)
   const [gstPercentage, setGstPercentage] = useState(18)
   const [discountAmount, setDiscountAmount] = useState(0)
+  const [calcMode, setCalcMode] = useState<'exclusive' | 'inclusive'>('exclusive')
+  const [inclusiveTotal, setInclusiveTotal] = useState(0)
+  const [inclusiveDescription, setInclusiveDescription] = useState('Charges')
+  const [arrivalDate, setArrivalDate] = useState(
+    reservation ? reservation.actual_check_in_date || reservation.check_in_date : ''
+  )
+  const [arrivalTime, setArrivalTime] = useState(reservation ? '12:00' : '')
+  const [departureDate, setDepartureDate] = useState(
+    reservation ? reservation.actual_check_out_date || reservation.expected_check_out_date : ''
+  )
+  const [departureTime, setDepartureTime] = useState(reservation ? '11:00' : '')
+
+  // Combine date + time into the ISO value persisted on the bill (empty if no date set).
+  const arrivalDateTime = arrivalDate ? `${arrivalDate}T${arrivalTime || '00:00'}` : ''
+  const departureDateTime = departureDate ? `${departureDate}T${departureTime || '00:00'}` : ''
 
   // Calculate number of days
   const calculateDays = () => {
@@ -53,9 +71,30 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
 
   const numberOfDays = calculateDays()
 
-  const subtotal = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0)
-  const taxAmount = enableGST ? (subtotal * gstPercentage) / 100 : 0
-  const totalAmount = subtotal + taxAmount - discountAmount
+  const lineItemsSubtotal = lineItems.reduce((sum, item) => sum + (item.amount || 0), 0)
+
+  let subtotal: number
+  let taxAmount: number
+  let totalAmount: number
+
+  if (calcMode === 'inclusive') {
+    // User enters the gross total; back-calculate base + tax from it.
+    subtotal = enableGST && gstPercentage > 0 ? inclusiveTotal / (1 + gstPercentage / 100) : inclusiveTotal
+    taxAmount = inclusiveTotal - subtotal
+    totalAmount = inclusiveTotal
+  } else {
+    subtotal = lineItemsSubtotal
+    taxAmount = enableGST ? (subtotal * gstPercentage) / 100 : 0
+    totalAmount = subtotal + taxAmount - discountAmount
+  }
+
+  const { cgstAmount, sgstAmount, cgstRate, sgstRate } = gstSplit(subtotal, taxAmount)
+
+  // In inclusive mode the bill carries a single synthesized charge; in exclusive
+  // mode it carries the entered line items. Used by both the preview and save.
+  const effectiveLineItems = calcMode === 'inclusive'
+    ? [{ description: inclusiveDescription || 'Charges', amount: subtotal }]
+    : lineItems
 
   useEffect(() => {
     // If this is a room bill with reservation, pre-populate with room charges
@@ -109,16 +148,18 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
     const billData: BillData = {
       billType,
       reservationId,
-      lineItems,
+      lineItems: effectiveLineItems,
       subtotal,
       taxAmount,
-      discountAmount,
+      discountAmount: calcMode === 'inclusive' ? 0 : discountAmount,
       totalAmount,
       enableGST,
       gstPercentage,
       checkInDate,
       checkOutDate,
       numberOfDays,
+      arrivalDateTime: arrivalDateTime || undefined,
+      departureDateTime: departureDateTime || undefined,
     }
 
     onSave?.(billData)
@@ -136,7 +177,7 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Stay Details Section */}
-          {(billType === 'ROOM' || billType === 'MANUAL') && (
+          {calcMode === 'exclusive' && (billType === 'ROOM' || billType === 'MANUAL') && (
             <Card className="bg-muted/50">
               <CardContent className="pt-6">
                 <div className="space-y-4">
@@ -202,6 +243,7 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
           )}
 
           {/* Quick Add Buttons */}
+          {calcMode === 'exclusive' && (
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
@@ -236,8 +278,106 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
               + Laundry
             </Button>
           </div>
+          )}
+
+          {/* Arrival & Departure */}
+          <Card className="bg-muted/50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="h-5 w-5 text-muted-foreground" />
+                <h3 className="text-sm font-semibold">Arrival & Departure</h3>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs">Arrival</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="date"
+                      aria-label="Arrival date"
+                      value={arrivalDate}
+                      onChange={(e) => setArrivalDate(e.target.value)}
+                      className="h-9"
+                    />
+                    <Input
+                      type="time"
+                      aria-label="Arrival time"
+                      value={arrivalTime}
+                      onChange={(e) => setArrivalTime(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Departure</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="date"
+                      aria-label="Departure date"
+                      value={departureDate}
+                      onChange={(e) => setDepartureDate(e.target.value)}
+                      className="h-9"
+                      min={arrivalDate || undefined}
+                    />
+                    <Input
+                      type="time"
+                      aria-label="Departure time"
+                      value={departureTime}
+                      onChange={(e) => setDepartureTime(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calculation Mode Toggle */}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={calcMode === 'exclusive' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setCalcMode('exclusive')}
+            >
+              Add GST (exclusive)
+            </Button>
+            <Button
+              type="button"
+              variant={calcMode === 'inclusive' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setCalcMode('inclusive')}
+            >
+              From Total (inclusive)
+            </Button>
+          </div>
+
+          {/* Inclusive Mode: single total field */}
+          {calcMode === 'inclusive' && (
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="inclusive_description" className="text-xs">Description</Label>
+                <Input
+                  id="inclusive_description"
+                  value={inclusiveDescription}
+                  onChange={(e) => setInclusiveDescription(e.target.value)}
+                  placeholder="Charges"
+                />
+              </div>
+              <div>
+                <Label htmlFor="inclusive_total" className="text-xs">Total Amount (incl. GST) ₹</Label>
+                <Input
+                  id="inclusive_total"
+                  type="number"
+                  value={inclusiveTotal || ''}
+                  onChange={(e) => setInclusiveTotal(parseFloat(e.target.value) || 0)}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Line Items */}
+          {calcMode === 'exclusive' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium">Line Items</h3>
@@ -276,6 +416,7 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
               </div>
             ))}
           </div>
+          )}
 
           {/* Calculations */}
           <div className="border-t pt-4 space-y-3">
@@ -311,33 +452,43 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
               )}
             </div>
 
-            {enableGST && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">GST ({gstPercentage}%)</span>
-                <span className="font-medium">₹{taxAmount.toFixed(2)}</span>
-              </div>
+            {enableGST && taxAmount > 0 && (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">CGST ({formatRate(cgstRate)}%)</span>
+                  <span className="font-medium">₹{cgstAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">SGST ({formatRate(sgstRate)}%)</span>
+                  <span className="font-medium">₹{sgstAmount.toFixed(2)}</span>
+                </div>
+              </>
             )}
 
-            {/* Discount */}
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-muted-foreground">Discount</label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">₹</span>
-                <Input
-                  type="number"
-                  value={discountAmount || ''}
-                  onChange={(e) => setDiscountAmount(parseFloat(e.target.value) || 0)}
-                  className="w-32 h-8 text-sm"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
+            {/* Discount (exclusive mode only) */}
+            {calcMode === 'exclusive' && (
+              <>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-muted-foreground">Discount</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">₹</span>
+                    <Input
+                      type="number"
+                      value={discountAmount || ''}
+                      onChange={(e) => setDiscountAmount(parseFloat(e.target.value) || 0)}
+                      className="w-32 h-8 text-sm"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
 
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Discount Applied</span>
-                <span className="font-medium text-red-600">-₹{discountAmount.toFixed(2)}</span>
-              </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Discount Applied</span>
+                    <span className="font-medium text-red-600">-₹{discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Total */}
@@ -380,7 +531,7 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
         <CardContent>
           <div className="space-y-2 text-sm">
             <div className="font-medium">Items:</div>
-            {lineItems.map((item, index) => (
+            {effectiveLineItems.map((item, index) => (
               <div key={index} className="flex justify-between pl-4">
                 <span className="text-muted-foreground">{item.description || '(No description)'}</span>
                 <span>₹{item.amount.toFixed(2)}</span>

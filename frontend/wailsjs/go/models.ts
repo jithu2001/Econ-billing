@@ -24,6 +24,8 @@ export namespace bindings {
 	    tax_amount: number;
 	    discount_amount: number;
 	    total_amount: number;
+	    arrival_datetime?: string;
+	    departure_datetime?: string;
 	    status: string;
 	    line_items: BillLineItemInput[];
 	
@@ -42,6 +44,8 @@ export namespace bindings {
 	        this.tax_amount = source["tax_amount"];
 	        this.discount_amount = source["discount_amount"];
 	        this.total_amount = source["total_amount"];
+	        this.arrival_datetime = source["arrival_datetime"];
+	        this.departure_datetime = source["departure_datetime"];
 	        this.status = source["status"];
 	        this.line_items = this.convertValues(source["line_items"], BillLineItemInput);
 	    }
@@ -460,6 +464,8 @@ export namespace models {
 	    tax_amount: number;
 	    discount_amount: number;
 	    total_amount: number;
+	    arrival_datetime?: string;
+	    departure_datetime?: string;
 	    status: string;
 	    generated_by: number[];
 	    // Go type: time
@@ -488,6 +494,8 @@ export namespace models {
 	        this.tax_amount = source["tax_amount"];
 	        this.discount_amount = source["discount_amount"];
 	        this.total_amount = source["total_amount"];
+	        this.arrival_datetime = source["arrival_datetime"];
+	        this.departure_datetime = source["departure_datetime"];
 	        this.status = source["status"];
 	        this.generated_by = source["generated_by"];
 	        this.created_at = this.convertValues(source["created_at"], null);

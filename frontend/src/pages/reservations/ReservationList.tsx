@@ -1,41 +1,15 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Calendar, Building2, LogIn, LogOut, X, Clock, Receipt } from 'lucide-react'
+import { Plus, Calendar, Building2, LogIn, LogOut, X, Clock, Receipt, CheckCircle2 } from 'lucide-react'
 import ReservationForm from '../../components/reservations/ReservationForm'
 import { reservationService, customerService, roomService } from '@/services'
+import { Avatar, StatCard, StatusBadge, EmptyState, TableSkeleton, PageHeader, Button, SectionCard } from '@/components/common'
 import type { Reservation, Customer, Room } from '../../types'
 import { handleApiError } from '@/lib/bindings'
 
-const getStatusBadge = (status: Reservation['status']) => {
-  const styles = {
-    ACTIVE: {
-      bg: 'bg-green-50',
-      text: 'text-green-600',
-      border: 'border-green-200',
-      dot: 'bg-green-500'
-    },
-    COMPLETED: {
-      bg: 'bg-gray-50',
-      text: 'text-gray-600',
-      border: 'border-gray-200',
-      dot: 'bg-gray-500'
-    },
-    CANCELLED: {
-      bg: 'bg-red-50',
-      text: 'text-red-600',
-      border: 'border-red-200',
-      dot: 'bg-red-500'
-    },
-  }
-
-  const style = styles[status]
-
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${style.bg} ${style.text} ${style.border}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-      {status}
-    </span>
-  )
+function calculateNights(checkIn: string, checkOut: string) {
+  const nights = Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000)
+  return Math.max(nights, 1)
 }
 
 export default function ReservationList() {
@@ -83,9 +57,7 @@ export default function ReservationList() {
   }
 
   const handleCancel = async (reservationId: string) => {
-    if (!confirm('Are you sure you want to cancel this reservation?')) {
-      return
-    }
+    if (!confirm('Are you sure you want to cancel this reservation?')) return
     try {
       await reservationService.cancel(reservationId)
       await loadData()
@@ -96,9 +68,7 @@ export default function ReservationList() {
 
   const handleCheckout = async (reservationId: string) => {
     try {
-      await reservationService.checkout(reservationId, {
-        checkout_date: new Date().toISOString().split('T')[0],
-      })
+      await reservationService.checkout(reservationId, { checkout_date: new Date().toISOString().split('T')[0] })
       await loadData()
     } catch (error) {
       console.error('Failed to checkout:', handleApiError(error))
@@ -108,56 +78,28 @@ export default function ReservationList() {
   const activeReservations = reservations.filter(r => r.status === 'ACTIVE')
   const completedReservations = reservations.filter(r => r.status === 'COMPLETED')
 
-  const isCheckedIn = (reservation: Reservation) => {
-    return reservation.actual_check_in_date != null
-  }
+  const isCheckedIn = (reservation: Reservation) => reservation.actual_check_in_date != null
 
   const canCheckInToday = (checkInDate: string, checkOutDate: string) => {
     const today = new Date().toISOString().split('T')[0]
-    const normalizedCheckIn = checkInDate?.split('T')[0] || checkInDate
-    const normalizedCheckOut = checkOutDate?.split('T')[0] || checkOutDate
-    return normalizedCheckIn <= today && today < normalizedCheckOut
-  }
-
-  const calculateNights = (checkIn: string, checkOut: string) => {
-    const start = new Date(checkIn)
-    const end = new Date(checkOut)
-    const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-    return Math.max(nights, 1)
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner" />
-      </div>
-    )
+    const inDate = checkInDate?.split('T')[0] || checkInDate
+    const outDate = checkOutDate?.split('T')[0] || checkOutDate
+    return inDate <= today && today < outDate
   }
 
   const statCards = [
-    { label: 'Total Reservations', value: reservations.length, color: 'gray' },
-    { label: 'Active', value: activeReservations.length, color: 'green' },
-    { label: 'Completed', value: completedReservations.length, color: 'gray' },
+    { label: 'Total Reservations', value: reservations.length, icon: Calendar, accent: 'primary' as const },
+    { label: 'Active', value: activeReservations.length, icon: CheckCircle2, accent: 'green' as const },
+    { label: 'Completed', value: completedReservations.length, icon: Clock, accent: 'stone' as const },
   ]
 
   return (
-    <div className="space-y-6 bg-gray-50 min-h-screen p-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between slide-in-left">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl font-bold text-gray-900">Reservations</h1>
-          </div>
-          <p className="text-gray-500">Manage room bookings and check-ins</p>
-        </div>
-        <button
-          onClick={() => setIsReservationFormOpen(true)}
-          className="px-6 py-3 bg-gray-900 rounded-xl font-semibold text-white hover:bg-gray-800 transition-all duration-300 flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>New Reservation</span>
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Reservations"
+        subtitle="Manage room bookings and check-ins"
+        action={<Button icon={Plus} onClick={() => setIsReservationFormOpen(true)}>New Reservation</Button>}
+      />
 
       <ReservationForm
         open={isReservationFormOpen}
@@ -167,205 +109,151 @@ export default function ReservationList() {
         rooms={rooms.filter(r => r.status === 'AVAILABLE')}
       />
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {statCards.map((stat, idx) => (
-          <div
-            key={stat.label}
-            className="bg-white border border-gray-200 rounded-xl p-6 fade-in"
-            style={{ animationDelay: `${idx * 0.1}s`, opacity: 0 }}
-          >
-            <p className="text-sm font-medium text-gray-500 mb-2">{stat.label}</p>
-            <p className={`text-3xl font-bold ${
-              stat.color === 'green' ? 'text-green-600' : 'text-gray-900'
-            }`}>
-              {stat.value}
-            </p>
+      {loading ? (
+        <TableSkeleton rows={6} cols={6} />
+      ) : (
+        <>
+          {/* Stats */}
+          <div className="stagger-children grid gap-4 md:grid-cols-3">
+            {statCards.map((stat, idx) => (
+              <StatCard key={stat.label} index={idx} label={stat.label} value={stat.value} icon={stat.icon} accent={stat.accent} />
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Active Reservations */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-green-50 rounded-lg">
-            <Calendar className="w-5 h-5 text-green-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">Active Reservations</h2>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Room</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Checkout</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nights</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {activeReservations.length > 0 ? (
-                activeReservations.map((reservation) => (
-                  <tr key={reservation.id} className="hover:bg-gray-50 transition-all">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-white font-semibold">
-                          {reservation.customer?.full_name?.charAt(0) || '?'}
-                        </div>
-                        <span className="font-medium text-gray-900">{reservation.customer?.full_name || 'Unknown'}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Building2 className="w-4 h-4 text-gray-400" />
-                        Room {reservation.room?.room_number || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {new Date(reservation.check_in_date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {reservation.expected_check_out_date
-                        ? new Date(reservation.expected_check_out_date).toLocaleDateString()
-                        : 'Not set'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-600">
-                        {reservation.expected_check_out_date
-                          ? calculateNights(reservation.check_in_date, reservation.expected_check_out_date)
-                          : '-'} nights
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">{getStatusBadge(reservation.status)}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        {!isCheckedIn(reservation) && canCheckInToday(reservation.check_in_date, reservation.expected_check_out_date) ? (
-                          <>
-                            <button
-                              onClick={() => handleCheckin(reservation.id)}
-                              className="px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm font-medium text-green-600 hover:bg-green-100 transition-all flex items-center gap-1.5"
-                            >
-                              <LogIn className="w-4 h-4" />
-                              Check In
-                            </button>
-                            <button
-                              onClick={() => handleCancel(reservation.id)}
-                              className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 transition-all flex items-center gap-1.5"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </>
-                        ) : isCheckedIn(reservation) ? (
-                          <button
-                            onClick={() => handleCheckout(reservation.id)}
-                            className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-100 transition-all flex items-center gap-1.5"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            Checkout
-                          </button>
-                        ) : (
-                          <>
-                            <span className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-500 flex items-center gap-1.5">
-                              <Clock className="w-4 h-4" />
-                              Future
-                            </span>
-                            <button
-                              onClick={() => handleCancel(reservation.id)}
-                              className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 transition-all flex items-center gap-1.5"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        <button
-                          onClick={() => navigate(`/customers/${reservation.customer_id}`)}
-                          className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200 transition-all"
+          {/* Active */}
+          <SectionCard title="Active Reservations" icon={Calendar} iconTint="hsl(var(--status-green)/0.12)">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="col-label px-4 py-3 text-left">Customer</th>
+                    <th className="col-label px-4 py-3 text-left">Room</th>
+                    <th className="col-label px-4 py-3 text-left">Check-in</th>
+                    <th className="col-label px-4 py-3 text-left">Checkout</th>
+                    <th className="col-label px-4 py-3 text-left">Nights</th>
+                    <th className="col-label px-4 py-3 text-left">Status</th>
+                    <th className="col-label px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeReservations.length > 0 ? (
+                    activeReservations.map((reservation) => {
+                      const checkedIn = isCheckedIn(reservation)
+                      return (
+                        <tr
+                          key={reservation.id}
+                          className="border-b border-gray-50"
+                          style={checkedIn ? { borderLeft: '4px solid hsl(var(--status-green))', background: 'hsl(152 50% 40% / 0.04)' } : undefined}
                         >
-                          <Receipt className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-gray-500">No active reservations</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <Avatar name={reservation.customer?.full_name} size="md" />
+                              <span className="font-medium text-gray-900">{reservation.customer?.full_name || 'Unknown'}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2 text-gray-600">
+                              <Building2 className="h-4 w-4 text-gray-400" /> Room {reservation.room?.room_number || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">{new Date(reservation.check_in_date).toLocaleDateString()}</td>
+                          <td className="px-4 py-3 text-gray-600">{reservation.expected_check_out_date ? new Date(reservation.expected_check_out_date).toLocaleDateString() : 'Not set'}</td>
+                          <td className="px-4 py-3">
+                            <span className="rounded-full bg-muted px-3 py-1 text-sm tabular-nums text-gray-600">
+                              {reservation.expected_check_out_date ? calculateNights(reservation.check_in_date, reservation.expected_check_out_date) : '-'} nights
+                            </span>
+                          </td>
+                          <td className="px-4 py-3"><StatusBadge status={reservation.status} /></td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-2">
+                              {!checkedIn && canCheckInToday(reservation.check_in_date, reservation.expected_check_out_date) ? (
+                                <>
+                                  <IconAction title="Check in" onClick={() => handleCheckin(reservation.id)} variant="green"><LogIn className="h-4 w-4" /></IconAction>
+                                  <IconAction title="Cancel reservation" onClick={() => handleCancel(reservation.id)} variant="red"><X className="h-4 w-4" /></IconAction>
+                                </>
+                              ) : checkedIn ? (
+                                <IconAction title="Checkout" onClick={() => handleCheckout(reservation.id)} variant="blue"><LogOut className="h-4 w-4" /></IconAction>
+                              ) : (
+                                <>
+                                  <span className="badge badge-stone"><Clock className="h-3 w-3" /> Future</span>
+                                  <IconAction title="Cancel reservation" onClick={() => handleCancel(reservation.id)} variant="red"><X className="h-4 w-4" /></IconAction>
+                                </>
+                              )}
+                              <IconAction title="View bills" onClick={() => navigate(`/customers/${reservation.customer_id}`)} variant="neutral"><Receipt className="h-4 w-4" /></IconAction>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  ) : (
+                    <tr><td colSpan={7}><EmptyState icon={Calendar} title="No active reservations" hint="New bookings will show up here." /></td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </SectionCard>
 
-      {/* Completed Reservations */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-gray-100 rounded-lg">
-            <Calendar className="w-5 h-5 text-gray-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">Recent Completed</h2>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Room</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-in</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Check-out</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nights</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {completedReservations.length > 0 ? (
-                completedReservations.slice(0, 5).map((reservation) => (
-                  <tr key={reservation.id} className="hover:bg-gray-50 transition-all">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
-                          {reservation.customer?.full_name?.charAt(0) || '?'}
-                        </div>
-                        <span className="font-medium text-gray-600">{reservation.customer?.full_name || 'Unknown'}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">Room {reservation.room?.room_number || 'N/A'}</td>
-                    <td className="px-6 py-4 text-gray-500">
-                      {new Date(reservation.check_in_date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">
-                      {reservation.actual_check_out_date
-                        ? new Date(reservation.actual_check_out_date).toLocaleDateString()
-                        : 'Not set'}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">
-                      {reservation.actual_check_out_date
-                        ? calculateNights(reservation.check_in_date, reservation.actual_check_out_date)
-                        : '-'}
-                    </td>
-                    <td className="px-6 py-4">{getStatusBadge(reservation.status)}</td>
+          {/* Completed */}
+          <SectionCard title="Recent Completed" icon={Calendar}>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="col-label px-4 py-3 text-left">Customer</th>
+                    <th className="col-label px-4 py-3 text-left">Room</th>
+                    <th className="col-label px-4 py-3 text-left">Check-in</th>
+                    <th className="col-label px-4 py-3 text-left">Check-out</th>
+                    <th className="col-label px-4 py-3 text-left">Nights</th>
+                    <th className="col-label px-4 py-3 text-left">Status</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-gray-500">No completed reservations</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody>
+                  {completedReservations.length > 0 ? (
+                    completedReservations.slice(0, 5).map((reservation) => (
+                      <tr key={reservation.id} className="border-b border-gray-50">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar name={reservation.customer?.full_name} size="md" className="opacity-70" />
+                            <span className="font-medium text-gray-600">{reservation.customer?.full_name || 'Unknown'}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">Room {reservation.room?.room_number || 'N/A'}</td>
+                        <td className="px-4 py-3 text-gray-500">{new Date(reservation.check_in_date).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-gray-500">{reservation.actual_check_out_date ? new Date(reservation.actual_check_out_date).toLocaleDateString() : 'Not set'}</td>
+                        <td className="px-4 py-3 tabular-nums text-gray-500">{reservation.actual_check_out_date ? calculateNights(reservation.check_in_date, reservation.actual_check_out_date) : '-'}</td>
+                        <td className="px-4 py-3"><StatusBadge status={reservation.status} /></td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr><td colSpan={6}><EmptyState icon={Calendar} title="No completed reservations" /></td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </SectionCard>
+        </>
+      )}
     </div>
+  )
+}
+
+const ACTION_STYLE: Record<string, React.CSSProperties> = {
+  green: { background: 'hsl(var(--status-green)/0.10)', borderColor: 'hsl(var(--status-green)/0.3)', color: 'hsl(152 50% 28%)' },
+  blue: { background: 'hsl(var(--status-blue)/0.10)', borderColor: 'hsl(var(--status-blue)/0.3)', color: 'hsl(210 65% 35%)' },
+  red: { background: 'hsl(var(--status-red)/0.10)', borderColor: 'hsl(var(--status-red)/0.3)', color: 'hsl(5 72% 38%)' },
+  neutral: {},
+}
+
+function IconAction({ title, onClick, variant, children }: { title: string; onClick: () => void; variant: 'green' | 'blue' | 'red' | 'neutral'; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      className={`inline-flex items-center justify-center rounded-lg border p-2 text-sm font-medium transition-colors ${variant === 'neutral' ? 'bg-muted text-gray-700 hover:bg-gray-200' : 'hover:brightness-95'}`}
+      style={ACTION_STYLE[variant]}
+    >
+      {children}
+    </button>
   )
 }

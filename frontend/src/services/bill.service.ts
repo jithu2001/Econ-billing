@@ -10,6 +10,8 @@ export interface CreateBillRequest {
   subtotal: number; tax_amount: number; discount_amount: number; total_amount: number;
   status?: 'DRAFT' | 'FINALIZED' | 'PAID' | 'UNPAID';
   line_items: { description: string; amount: number }[];
+  arrival_datetime?: string;
+  departure_datetime?: string;
 }
 
 export interface CreatePaymentRequest {
@@ -27,6 +29,8 @@ export const billService = {
       discount_amount: d.discount_amount, total_amount: d.total_amount,
       status: d.status ?? 'DRAFT',
       line_items: d.line_items,
+      arrival_datetime: d.arrival_datetime,
+      departure_datetime: d.departure_datetime,
     } as any) as unknown as Promise<Bill>,
   getById: (id: string) => BillAPI.GetByID(id) as unknown as Promise<Bill>,
   getByCustomerId: (customerId: string) => BillAPI.GetByCustomerID(customerId) as unknown as Promise<Bill[]>,

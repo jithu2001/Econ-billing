@@ -1,4 +1,4 @@
-import { Minus, Square, X } from 'lucide-react'
+import { Minus, Square, X, Mountain } from 'lucide-react'
 import { AppAPI } from '@/lib/bindings'
 
 // Wails frameless drag region is opted into via the `--wails-draggable` CSS
@@ -9,31 +9,36 @@ const noDrag = { '--wails-draggable': 'no-drag' } as React.CSSProperties
 export default function TitleBar() {
   return (
     <div
-      style={drag}
-      className="flex items-center justify-between h-9 shrink-0 bg-white border-b border-gray-200 select-none"
+      style={{ ...drag, background: 'hsl(25 30% 18%)' }}
+      className="flex h-9 shrink-0 select-none items-center justify-between text-amber-50/90"
     >
-      <div className="px-3 text-sm font-semibold text-gray-700 tracking-wide">Econ</div>
-      <div style={noDrag} className="flex items-stretch h-full">
+      <div className="flex items-center gap-2 px-3">
+        <Mountain className="h-3.5 w-3.5 text-amber-300/80" />
+        <span className="text-sm font-semibold tracking-wide">Econ</span>
+      </div>
+      <div style={noDrag} className="flex items-center gap-1 pr-2">
         <button
           onClick={() => AppAPI.MinimizeWindow()}
           aria-label="Minimize"
-          className="flex items-center justify-center w-11 text-gray-600 hover:bg-gray-100 transition-colors"
+          className="flex h-6 w-7 items-center justify-center rounded-md text-amber-50/70 transition-colors hover:bg-white/10 hover:text-amber-50"
         >
-          <Minus className="w-4 h-4" />
+          <Minus className="h-4 w-4" />
         </button>
         <button
           onClick={() => AppAPI.MaximizeWindow()}
           aria-label="Maximize"
-          className="flex items-center justify-center w-11 text-gray-600 hover:bg-gray-100 transition-colors"
+          className="flex h-6 w-7 items-center justify-center rounded-md text-amber-50/70 transition-colors hover:bg-white/10 hover:text-amber-50"
         >
-          <Square className="w-3.5 h-3.5" />
+          <Square className="h-3 w-3" />
         </button>
         <button
           onClick={() => AppAPI.CloseWindow()}
           aria-label="Close"
-          className="flex items-center justify-center w-11 text-gray-600 hover:bg-red-600 hover:text-white transition-colors"
+          className="flex h-6 w-7 items-center justify-center rounded-md text-amber-50/70 transition-colors hover:text-white"
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(5 70% 55%)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '')}
         >
-          <X className="w-4 h-4" />
+          <X className="h-4 w-4" />
         </button>
       </div>
     </div>
