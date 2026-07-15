@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -38,6 +38,22 @@ export default function ReservationForm({
     expected_check_out_date: reservation?.expected_check_out_date || '',
     status: reservation?.status || 'ACTIVE' as const,
   })
+
+  // Re-seed when the dialog opens so customer_id/room_id hold real values even
+  // if the lists hadn't loaded at first mount. Keyed on `open` only — the
+  // filtered room list is a fresh array each render and must not be a dep.
+  useEffect(() => {
+    if (!open) return
+    setFormData({
+      customer_id: reservation?.customer_id || preselectedCustomerId || customers[0]?.id || '',
+      room_id: reservation?.room_id || preselectedRoomId || availableRooms[0]?.id || '',
+      check_in_date: reservation?.check_in_date || new Date().toISOString().split('T')[0],
+      expected_check_out_date: reservation?.expected_check_out_date || '',
+      status: reservation?.status || 'ACTIVE',
+    })
+    setError(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, reservation, preselectedCustomerId, preselectedRoomId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

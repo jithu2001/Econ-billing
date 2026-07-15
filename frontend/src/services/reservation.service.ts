@@ -1,43 +1,24 @@
-import { apiClient } from '@/lib/api';
-import type { Reservation } from '@/types';
+// frontend/src/services/reservation.service.ts
+import { ReservationAPI } from '@/lib/bindings'
+import type { Reservation } from '@/types'
 
 export interface CreateReservationRequest {
-  customer_id: string;
-  room_id: string;
-  check_in_date: string;
-  expected_check_out_date?: string;
+  customer_id: string; room_id: string;
+  check_in_date: string; expected_check_out_date?: string;
 }
-
-export interface CheckoutRequest {
-  checkout_date: string;
-}
+export interface CheckoutRequest { checkout_date: string }
 
 export const reservationService = {
-  async getAll(): Promise<Reservation[]> {
-    const response = await apiClient.get<Reservation[]>('/api/reservations');
-    return response.data;
-  },
-
-  async getById(id: string): Promise<Reservation> {
-    const response = await apiClient.get<Reservation>(`/api/reservations/${id}`);
-    return response.data;
-  },
-
-  async create(data: CreateReservationRequest): Promise<Reservation> {
-    const response = await apiClient.post<Reservation>('/api/reservations', data);
-    return response.data;
-  },
-
-  async checkin(id: string): Promise<void> {
-    await apiClient.put(`/api/reservations/${id}/checkin`);
-  },
-
-  async cancel(id: string): Promise<void> {
-    await apiClient.put(`/api/reservations/${id}/cancel`);
-  },
-
-  async checkout(id: string, data: CheckoutRequest): Promise<Reservation> {
-    const response = await apiClient.put<Reservation>(`/api/reservations/${id}/checkout`, data);
-    return response.data;
-  },
-};
+  getAll: () => ReservationAPI.GetAll() as unknown as Promise<Reservation[]>,
+  getById: (id: string) => ReservationAPI.GetByID(id) as unknown as Promise<Reservation>,
+  create: (d: CreateReservationRequest) =>
+    ReservationAPI.Create({
+      customer_id: d.customer_id, room_id: d.room_id,
+      check_in_date: d.check_in_date,
+      expected_check_out_date: d.expected_check_out_date ?? '',
+    }) as unknown as Promise<Reservation>,
+  checkin: (id: string) => ReservationAPI.CheckIn(id) as unknown as Promise<void>,
+  cancel: (id: string) => ReservationAPI.Cancel(id) as unknown as Promise<void>,
+  checkout: (id: string, d: CheckoutRequest) =>
+    ReservationAPI.Checkout(id, d.checkout_date) as unknown as Promise<void>,
+}

@@ -2,29 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Clean Minimal Design System - White/Grey/Black Theme */
+/* ============================================================
+   Econ — Warm Lodge Design System
+   Palette: parchment / amber-brown / forest green
+   ============================================================ */
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 9%;
+    /* Core palette — stored as HSL components, consumed via hsl(var(--token)) */
+    --background: 36 20% 97%;        /* warm parchment off-white */
+    --foreground: 25 15% 12%;        /* warm near-black */
+
+    --surface: 0 0% 100%;            /* pure white cards */
+    --surface-raised: 36 15% 98%;    /* subtle warm tint for hover/raised */
+
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 25 15% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 9%;
-    --radius: 0.5rem;
+    --popover-foreground: 25 15% 12%;
+
+    --primary: 25 80% 40%;           /* rich amber-brown, lodge feel */
+    --primary-hover: 25 80% 33%;
+    --primary-foreground: 36 30% 98%;
+
+    --secondary: 30 10% 94%;
+    --secondary-foreground: 25 15% 12%;
+
+    --muted: 30 10% 94%;             /* warm grey background */
+    --muted-foreground: 30 8% 42%;
+
+    --accent: 160 45% 38%;           /* forest green for success/active */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 5 70% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 12% 88%;            /* warm, not cold, border */
+    --input: 30 12% 88%;
+    --ring: 25 80% 40%;              /* primary-colored focus ring */
+
+    --radius: 0.75rem;
+
+    /* Semantic status hues (warmed) */
+    --status-green: 152 50% 40%;     /* active / paid / available */
+    --status-blue: 210 65% 45%;      /* confirmed / occupied */
+    --status-amber: 38 90% 45%;      /* pending / maintenance */
+    --status-red: 5 70% 48%;         /* unpaid / cancelled */
+    --status-stone: 30 8% 60%;       /* draft / neutral / completed */
+
+    /* Warm avatar */
+    --avatar: 38 80% 45%;
   }
 
   * {
@@ -32,116 +58,280 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-size: 14.5px;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-}
 
-/* Smooth Entrance Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+  /* Headings carry real weight */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
+  /* Tabular numerals stop amount/count columns from jittering */
+  .tabular-nums,
+  .stat-value,
+  td, th {
+    font-variant-numeric: tabular-nums;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+
+  /* Visible keyboard focus ring on every interactive element */
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
   }
 }
 
-/* Animation Classes */
-.fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+/* ============================================================
+   Reusable component classes
+   ============================================================ */
+
+/* ---- Uppercase micro-label (form labels, table headers) ---- */
+.col-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
 }
 
-.slide-in-left {
-  animation: slideInLeft 0.4s ease-out forwards;
-}
-
-/* Card Component */
+/* ---- Card ---- */
 .card {
-  @apply bg-white rounded-xl p-5 border border-gray-200 shadow-sm;
-  transition: all 0.2s ease;
+  @apply rounded-xl border bg-white p-5 shadow-sm;
 }
 
-.card:hover {
-  @apply shadow-md border-gray-300;
-}
-
-/* Glass Card (legacy support) */
+/* Glass card (legacy support) */
 .glass-card {
-  @apply bg-white rounded-xl p-5 border border-gray-200 shadow-lg;
+  @apply rounded-xl border bg-white p-5 shadow-lg;
 }
 
-/* Modern Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* ---- Buttons ---- */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium;
+}
+.btn-primary {
+  background: hsl(var(--primary));
+  @apply text-white;
+}
+.btn-primary:hover {
+  background: hsl(var(--primary-hover));
+}
+.btn-secondary {
+  @apply border bg-white text-gray-700 hover:bg-gray-50;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
+/* ---- Status badge ---- */
+.badge {
+  @apply inline-flex items-center gap-1.5 rounded-full border font-semibold;
+  padding: 2px 10px;
+  font-size: 11px;
+}
+.badge-green  { background: hsl(var(--status-green) / 0.12); color: hsl(152 50% 28%); border-color: hsl(var(--status-green) / 0.28); }
+.badge-blue   { background: hsl(var(--status-blue) / 0.12);  color: hsl(210 65% 35%); border-color: hsl(var(--status-blue) / 0.28); }
+.badge-amber  { background: hsl(var(--status-amber) / 0.14); color: hsl(38 92% 32%);  border-color: hsl(var(--status-amber) / 0.30); }
+.badge-red    { background: hsl(var(--status-red) / 0.12);   color: hsl(5 72% 38%);   border-color: hsl(var(--status-red) / 0.28); }
+.badge-stone  { background: hsl(var(--status-stone) / 0.12); color: hsl(30 8% 38%);   border-color: hsl(var(--status-stone) / 0.28); }
+
+.badge-dot { width: 6px; height: 6px; border-radius: 9999px; }
+.badge-dot-green { background: hsl(var(--status-green)); }
+.badge-dot-blue  { background: hsl(var(--status-blue)); }
+.badge-dot-amber { background: hsl(var(--status-amber)); }
+.badge-dot-red   { background: hsl(var(--status-red)); }
+.badge-dot-stone { background: hsl(var(--status-stone)); }
+
+/* ---- Pill search input ---- */
+.search-pill {
+  @apply w-full rounded-full border bg-white py-2.5 pl-11 pr-4 text-gray-900 outline-none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.search-pill:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 4px;
+/* ---- Form inputs ---- */
+.field-input {
+  @apply w-full rounded-lg border bg-white px-4 py-2.5 text-gray-900 outline-none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field-input:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
+/* ---- Skeleton loader ---- */
+.skeleton {
+  background: hsl(30 10% 90%);
+  border-radius: 0.5rem;
 }
 
-/* Loading Spinner */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
+/* ---- Loading spinner ---- */
 .spinner {
-  border: 3px solid #e5e5e5;
-  border-top-color: #333;
+  border: 3px solid hsl(30 10% 88%);
+  border-top-color: hsl(var(--primary));
   border-radius: 50%;
   width: 32px;
   height: 32px;
-  animation: spin 0.6s linear infinite;
 }
 
-/* Form Focus States */
-input:focus,
-select:focus,
-textarea:focus {
-  @apply outline-none ring-2 ring-gray-900 ring-offset-1;
-}
-
-/* Button Styles */
-.btn {
-  @apply px-4 py-2 rounded-lg font-medium transition-colors;
-}
-
-.btn-primary {
-  @apply bg-gray-900 text-white hover:bg-gray-800;
-}
-
-.btn-secondary {
-  @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50;
-}
+/* ---- Modern scrollbar (warm) ---- */
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: hsl(36 18% 95%); }
+::-webkit-scrollbar-thumb { background: hsl(30 12% 80%); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(30 12% 70%); }
 
 /* Legacy gradient-text support */
-.gradient-text {
-  @apply text-gray-900 font-bold;
+.gradient-text { @apply font-bold text-gray-900; }
+
+/* ============================================================
+   Keyframes (defined globally; application gated by motion pref)
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUpToast {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.45; }
+  100% { opacity: 1; }
+}
+
+/* ============================================================
+   Motion — only when the user hasn't asked to reduce it
+   ============================================================ */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-fade-up {
+    animation: fadeUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Stagger children — each child reads --i for its index */
+  .stagger-children > * {
+    animation: fadeUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+
+  .stat-value {
+    animation: countUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .modal-content {
+    animation: modalIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .modal-overlay {
+    animation: overlayIn 0.2s ease both;
+  }
+
+  .status-dot-active {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-slide-up {
+    animation: slideUpToast 0.3s ease-out both;
+  }
+
+  .spinner {
+    animation: spin 0.6s linear infinite;
+  }
+  .skeleton {
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  /* Legacy entrance classes still used in places */
+  .fade-in       { animation: fadeUp 0.4s ease-out both; }
+  .slide-in-left { animation: fadeUp 0.4s ease-out both; }
+
+  /* Card hover lift */
+  .card {
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px hsla(25, 40%, 20%, 0.10);
+  }
+
+  /* Button press feedback */
+  button, .btn {
+    transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+  }
+  button:active, .btn:active { transform: scale(0.97); }
+
+  /* Table row hover */
+  tbody tr { transition: background 0.12s ease; }
+}
+
+/* ============================================================
+   Reduced motion — keep everything visible & still
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  /* Guarantee entrance-animated content is visible even if it
+     relied on an initial opacity:0 inline style. */
+  .animate-fade-up,
+  .stagger-children > *,
+  .stat-value,
+  .modal-content,
+  .modal-overlay,
+  .fade-in,
+  .slide-in-left {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Sliding underline for nav links */
+.nav-link {
+  position: relative;
+  transition: color 0.15s ease;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 2px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  transform: scaleX(0);
+}
+.nav-link.active::after { transform: scaleX(1); }
+@media (prefers-reduced-motion: no-preference) {
+  .nav-link::after {
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
 }

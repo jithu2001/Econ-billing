@@ -1,8 +1,46 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '@/services/auth.service'
-import { handleApiError } from '@/lib/api'
-import { Building2, Eye, EyeOff } from 'lucide-react'
+import { handleApiError } from '@/lib/bindings'
+import { Eye, EyeOff, CheckCircle2, AlertCircle, Landmark } from 'lucide-react'
+
+/** Warm mountain/forest scene for the login splash panel. */
+function LodgeScene() {
+  return (
+    <svg viewBox="0 0 400 600" preserveAspectRatio="xMidYMid slice" className="h-full w-full" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="hsl(28 75% 52%)" />
+          <stop offset="55%" stopColor="hsl(25 70% 42%)" />
+          <stop offset="100%" stopColor="hsl(22 55% 28%)" />
+        </linearGradient>
+        <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="hsl(150 40% 32%)" />
+          <stop offset="100%" stopColor="hsl(155 45% 22%)" />
+        </linearGradient>
+      </defs>
+      <rect width="400" height="600" fill="url(#sky)" />
+      {/* sun */}
+      <circle cx="300" cy="130" r="48" fill="hsl(40 95% 75%)" opacity="0.9" />
+      {/* far mountains */}
+      <path d="M0 360 L110 230 L210 360 Z" fill="hsl(22 45% 30%)" opacity="0.85" />
+      <path d="M150 360 L270 210 L400 360 Z" fill="hsl(22 50% 26%)" opacity="0.9" />
+      {/* snow caps */}
+      <path d="M88 262 L110 230 L133 262 L118 256 L104 268 Z" fill="hsl(40 30% 94%)" opacity="0.9" />
+      <path d="M248 240 L270 210 L293 240 L276 234 L262 246 Z" fill="hsl(40 30% 94%)" opacity="0.9" />
+      {/* hills */}
+      <path d="M0 600 L0 380 Q200 320 400 390 L400 600 Z" fill="url(#hill)" />
+      {/* trees */}
+      {[40, 80, 130, 330, 360].map((x, i) => (
+        <g key={i} transform={`translate(${x} ${430 + (i % 3) * 14})`}>
+          <path d="M0 0 L14 30 L-14 30 Z" fill="hsl(155 45% 20%)" />
+          <path d="M0 14 L16 46 L-16 46 Z" fill="hsl(152 42% 18%)" />
+          <rect x="-2" y="46" width="4" height="10" fill="hsl(25 40% 22%)" />
+        </g>
+      ))}
+    </svg>
+  )
+}
 
 export default function Login() {
   const navigate = useNavigate()
@@ -22,7 +60,6 @@ export default function Login() {
     setError('')
     setSuccess('')
 
-    // Validation for sign up
     if (isSignUp) {
       if (password !== confirmPassword) {
         setError('Passwords do not match')
@@ -35,15 +72,11 @@ export default function Login() {
     }
 
     setIsLoading(true)
-
     try {
       if (isSignUp) {
         await authService.register({ username, password, role: 'ADMIN', registration_token: registrationToken })
         setSuccess('Account created successfully! Redirecting to dashboard...')
-        // Wait 1.5 seconds before redirecting to show success message
-        setTimeout(() => {
-          navigate('/dashboard')
-        }, 1500)
+        setTimeout(() => navigate('/dashboard'), 1500)
       } else {
         await authService.login({ username, password })
         navigate('/dashboard')
@@ -54,8 +87,8 @@ export default function Login() {
     }
   }
 
-  const toggleMode = () => {
-    setIsSignUp(!isSignUp)
+  const setMode = (signUp: boolean) => {
+    setIsSignUp(signUp)
     setError('')
     setSuccess('')
     setPassword('')
@@ -66,180 +99,157 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full mx-4">
-        {/* Logo Section */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Building2 className="w-16 h-16 text-gray-900" />
+    <div className="flex h-full">
+      {/* Left — illustration */}
+      <div className="relative hidden w-1/2 lg:block">
+        <LodgeScene />
+        <div className="absolute inset-0 flex flex-col justify-end p-12 text-white">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
+              <Landmark className="h-5 w-5" />
+            </span>
+            <span className="text-2xl font-semibold">Econ</span>
           </div>
-          <h1 className="text-5xl font-bold text-gray-900 mb-2">Econ</h1>
-          <p className="text-gray-500 text-sm">Lodge Management System</p>
+          <h2 className="max-w-sm text-3xl font-semibold leading-tight">
+            Run your lodge with calm and confidence.
+          </h2>
+          <p className="mt-2 max-w-sm text-white/80">
+            Reservations, billing, and guests — all in one warm, simple place.
+          </p>
         </div>
+      </div>
 
-        {/* Login/Signup Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
-          {/* Top border accent */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gray-900 rounded-t-xl" />
-
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
-            </h2>
-            <p className="text-gray-500 text-sm">
-              {isSignUp ? 'Sign up to get started' : 'Sign in to continue'}
-            </p>
+      {/* Right — form */}
+      <div className="flex w-full items-center justify-center overflow-y-auto bg-background px-4 py-8 lg:w-1/2">
+        <div className="my-auto w-full max-w-md">
+          {/* Mobile logo */}
+          <div className="mb-8 text-center lg:hidden">
+            <div className="mb-3 flex items-center justify-center gap-2">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl text-white" style={{ background: 'hsl(var(--primary))' }}>
+                <Landmark className="h-6 w-6" />
+              </span>
+            </div>
+            <h1 className="text-3xl font-semibold text-gray-900">Econ</h1>
+            <p className="text-sm text-gray-500">Lodge Management System</p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <div className="text-sm text-red-600 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full" />
-                  {error}
-                </div>
-              </div>
-            )}
-
-            {/* Success Message */}
-            {success && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <div className="text-sm text-green-600 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  {success}
-                </div>
-              </div>
-            )}
-
-            {/* Username Field */}
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-600 mb-2">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none"
-                placeholder="Enter your username"
+          <div className="rounded-2xl border bg-white p-8 shadow-sm" style={{ boxShadow: '0 16px 48px hsla(25,40%,20%,0.10)' }}>
+            {/* Animated tab slider */}
+            <div className="relative mb-6 grid grid-cols-2 rounded-xl bg-muted p-1">
+              <span
+                className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-lg bg-white shadow-sm transition-transform duration-300"
+                style={{
+                  transform: isSignUp ? 'translateX(100%)' : 'translateX(0)',
+                  transitionTimingFunction: 'cubic-bezier(0.22,1,0.36,1)',
+                }}
+                aria-hidden="true"
               />
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Sign Up Additional Fields */}
-            {isSignUp && (
-              <div className="space-y-5">
-                {/* Confirm Password */}
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-600 mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none"
-                      placeholder="Confirm your password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Registration Token */}
-                <div>
-                  <label htmlFor="registrationToken" className="block text-sm font-medium text-gray-600 mb-2">
-                    Registration Token
-                  </label>
-                  <input
-                    id="registrationToken"
-                    name="registrationToken"
-                    type="text"
-                    required
-                    value={registrationToken}
-                    onChange={(e) => setRegistrationToken(e.target.value)}
-                    placeholder="Enter registration token"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all duration-300 outline-none"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">Required security token provided by administrator</p>
-                </div>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 px-6 bg-gray-900 rounded-xl font-semibold text-white hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="flex items-center justify-center gap-2">
-                {isLoading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {isSignUp ? 'Creating Account...' : 'Signing In...'}
-                  </>
-                ) : (
-                  <>{isSignUp ? 'Create Account' : 'Sign In'}</>
-                )}
-              </span>
-            </button>
-
-            {/* Toggle Mode */}
-            <div className="text-center pt-4">
               <button
                 type="button"
-                onClick={toggleMode}
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
+                onClick={() => setMode(false)}
+                className={`relative z-10 rounded-lg py-2 text-sm font-medium transition-colors ${!isSignUp ? 'text-gray-900' : 'text-gray-500'}`}
               >
-                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode(true)}
+                className={`relative z-10 rounded-lg py-2 text-sm font-medium transition-colors ${isSignUp ? 'text-gray-900' : 'text-gray-500'}`}
+              >
+                Sign Up
               </button>
             </div>
-          </form>
-        </div>
 
-        {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-gray-400 text-sm">
-            Powered by Econ
-          </p>
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900">{isSignUp ? 'Create Account' : 'Welcome Back'}</h2>
+              <p className="text-sm text-gray-500">{isSignUp ? 'Sign up to get started' : 'Sign in to continue'}</p>
+            </div>
+
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              {error && (
+                <div className="animate-slide-down flex items-center gap-2 rounded-xl border p-3 text-sm" style={{ background: 'hsl(var(--status-red)/0.08)', borderColor: 'hsl(var(--status-red)/0.3)', color: 'hsl(5 72% 38%)' }}>
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="animate-slide-down flex items-center gap-2 rounded-xl border p-3 text-sm" style={{ background: 'hsl(var(--status-green)/0.10)', borderColor: 'hsl(var(--status-green)/0.3)', color: 'hsl(152 50% 28%)' }}>
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  {success}
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="username" className="mb-2 block text-sm font-medium text-gray-600">Username</label>
+                <input
+                  id="username" name="username" type="text" required
+                  value={username} onChange={(e) => setUsername(e.target.value)}
+                  className="field-input" placeholder="Enter your username"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-600">Password</label>
+                <div className="relative">
+                  <input
+                    id="password" name="password" type={showPassword ? 'text' : 'password'} required
+                    value={password} onChange={(e) => setPassword(e.target.value)}
+                    className="field-input pr-12" placeholder="Enter your password"
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 transition-colors hover:text-gray-600">
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {isSignUp && (
+                <div className="animate-slide-down space-y-5">
+                  <div>
+                    <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-gray-600">Confirm Password</label>
+                    <div className="relative">
+                      <input
+                        id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} required
+                        value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="field-input pr-12" placeholder="Confirm your password"
+                      />
+                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 transition-colors hover:text-gray-600">
+                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="registrationToken" className="mb-2 block text-sm font-medium text-gray-600">Registration Token</label>
+                    <input
+                      id="registrationToken" name="registrationToken" type="text" required
+                      value={registrationToken} onChange={(e) => setRegistrationToken(e.target.value)}
+                      placeholder="Enter registration token" className="field-input"
+                    />
+                    <p className="mt-2 text-xs text-gray-500">Required security token provided by administrator</p>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit" disabled={isLoading}
+                className="btn-primary w-full rounded-xl py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  {isLoading ? (
+                    <>
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                    </>
+                  ) : (
+                    isSignUp ? 'Create Account' : 'Sign In'
+                  )}
+                </span>
+              </button>
+            </form>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-gray-400">Powered by Econ</p>
         </div>
       </div>
     </div>

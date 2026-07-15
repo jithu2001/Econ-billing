@@ -75,6 +75,8 @@ export interface Bill {
   tax_amount: number
   discount_amount: number
   total_amount: number
+  arrival_datetime?: string
+  departure_datetime?: string
   status: 'DRAFT' | 'FINALIZED' | 'PAID' | 'UNPAID'
   generated_by: string
   created_at: string

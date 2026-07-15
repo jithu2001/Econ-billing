@@ -1,46 +1,30 @@
 import { useState, useEffect } from 'react'
-import { Receipt, Calendar, Filter, Search, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X, Eye } from 'lucide-react'
+import { Receipt, Calendar, Filter, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X, Eye, ChevronDown } from 'lucide-react'
 import { billService, customerService } from '@/services'
 import type { Bill } from '@/types'
-import { handleApiError } from '@/lib/api'
+import { handleApiError } from '@/lib/bindings'
 import BillViewModal from '@/components/bills/BillViewModal'
+import { Avatar, StatCard, StatusBadge, SearchInput, EmptyState, TableSkeleton, PageHeader } from '@/components/common'
 
-const getStatusBadge = (status: Bill['status']) => {
-  const styles = {
-    DRAFT: 'bg-gray-50 text-gray-600 border-gray-200',
-    FINALIZED: 'bg-blue-50 text-blue-600 border-blue-200',
-    PAID: 'bg-green-50 text-green-600 border-green-200',
-    UNPAID: 'bg-red-50 text-red-600 border-red-200',
-  }
-
-  const dots = {
-    DRAFT: 'bg-gray-500',
-    FINALIZED: 'bg-blue-500',
-    PAID: 'bg-green-500',
-    UNPAID: 'bg-red-500',
-  }
-
-  return (
-    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold border ${styles[status]}`}>
-      <div className={`w-2 h-2 rounded-full ${dots[status]}`} />
-      {status}
-    </span>
-  )
+const AMOUNT_COLOR: Record<string, string> = {
+  PAID: 'hsl(var(--status-green))',
+  UNPAID: 'hsl(var(--status-red))',
+  FINALIZED: 'hsl(var(--status-amber))',
+  DRAFT: 'hsl(var(--status-stone))',
 }
 
 export default function BillList() {
   const [loading, setLoading] = useState(true)
   const [bills, setBills] = useState<Bill[]>([])
   const [filteredBills, setFilteredBills] = useState<Bill[]>([])
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
-  // Filter states
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
   const [gstFilter, setGstFilter] = useState<string>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
 
-  // Bill view modal state
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
 
@@ -55,21 +39,13 @@ export default function BillList() {
   const loadData = async () => {
     try {
       setLoading(true)
-      // Fetch customers first
       const customersData = await customerService.getAll()
-
-      // Fetch bills for all customers
       const allBills: Bill[] = []
       for (const customer of customersData) {
         try {
           const customerBills = await billService.getByCustomerId(customer.id)
-          // Attach customer data to each bill
-          const billsWithCustomer = customerBills.map(bill => ({
-            ...bill,
-            customer: customer
-          }))
-          allBills.push(...billsWithCustomer)
-        } catch (error) {
+          allBills.push(...customerBills.map(bill => ({ ...bill, customer })))
+        } catch {
           // Customer might not have bills, continue
         }
       }
@@ -83,37 +59,13 @@ export default function BillList() {
 
   const applyFilters = () => {
     let filtered = [...bills]
-
-    // Filter by status
-    if (statusFilter !== 'ALL') {
-      filtered = filtered.filter(bill => bill.status === statusFilter)
-    }
-
-    // Filter by GST type
-    if (gstFilter === 'GST') {
-      filtered = filtered.filter(bill => bill.is_gst_bill === true)
-    } else if (gstFilter === 'NON_GST') {
-      filtered = filtered.filter(bill => bill.is_gst_bill === false)
-    }
-
-    // Filter by search query (customer name)
-    if (searchQuery) {
-      filtered = filtered.filter(bill =>
-        bill.customer?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    // Filter by date range
-    if (dateFrom) {
-      filtered = filtered.filter(bill => bill.bill_date >= dateFrom)
-    }
-    if (dateTo) {
-      filtered = filtered.filter(bill => bill.bill_date <= dateTo)
-    }
-
-    // Sort by date (newest first)
+    if (statusFilter !== 'ALL') filtered = filtered.filter(b => b.status === statusFilter)
+    if (gstFilter === 'GST') filtered = filtered.filter(b => b.is_gst_bill === true)
+    else if (gstFilter === 'NON_GST') filtered = filtered.filter(b => b.is_gst_bill === false)
+    if (searchQuery) filtered = filtered.filter(b => b.customer?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    if (dateFrom) filtered = filtered.filter(b => b.bill_date >= dateFrom)
+    if (dateTo) filtered = filtered.filter(b => b.bill_date <= dateTo)
     filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-
     setFilteredBills(filtered)
   }
 
@@ -130,7 +82,6 @@ export default function BillList() {
     setIsViewModalOpen(true)
   }
 
-  // Calculate stats
   const stats = {
     total: bills.length,
     paid: bills.filter(b => b.status === 'PAID').length,
@@ -140,275 +91,166 @@ export default function BillList() {
     pendingRevenue: bills.filter(b => b.status === 'UNPAID' || b.status === 'FINALIZED').reduce((sum, b) => sum + b.total_amount, 0),
   }
 
-  const statCards = [
-    { label: 'Total Bills', value: stats.total, icon: Receipt, color: 'gray' },
-    { label: 'Paid', value: stats.paid, icon: CheckCircle, color: 'green' },
-    { label: 'Unpaid', value: stats.unpaid, icon: Clock, color: 'red' },
-    { label: 'Draft', value: stats.draft, icon: FileText, color: 'gray' },
-    { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'green' },
-    { label: 'Pending', value: `₹${stats.pendingRevenue.toLocaleString()}`, icon: DollarSign, color: 'amber' },
-  ]
-
-  const colorClasses = {
-    gray: { bg: 'bg-gray-100', text: 'text-gray-600' },
-    green: { bg: 'bg-green-50', text: 'text-green-600' },
-    red: { bg: 'bg-red-50', text: 'text-red-600' },
-    amber: { bg: 'bg-amber-50', text: 'text-amber-600' },
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="spinner" />
-      </div>
-    )
-  }
+  const activeFilterCount =
+    (statusFilter !== 'ALL' ? 1 : 0) + (gstFilter !== 'ALL' ? 1 : 0) +
+    (searchQuery ? 1 : 0) + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0)
 
   return (
-    <div className="space-y-6 bg-gray-50 min-h-screen p-6">
-      {/* Page Header */}
-      <div className="slide-in-left">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Bills</h1>
-        <p className="text-gray-500">Manage and track all billing records</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader title="Bills" subtitle="Manage and track all billing records" />
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        {statCards.map((stat, idx) => {
-          const Icon = stat.icon
-          const colors = colorClasses[stat.color as keyof typeof colorClasses]
-          return (
-            <div
-              key={stat.label}
-              className="bg-white border border-gray-200 rounded-xl p-4 fade-in"
-              style={{ animationDelay: `${idx * 0.05}s`, opacity: 0 }}
-            >
-              <div className={`p-2 ${colors.bg} rounded-lg inline-block mb-3`}>
-                <Icon className={`w-5 h-5 ${colors.text}`} />
-              </div>
-              <p className="text-xs font-medium text-gray-500 mb-1">{stat.label}</p>
-              <p className={`text-xl font-bold ${colors.text}`}>{stat.value}</p>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 fade-in" style={{ animationDelay: '0.3s', opacity: 0 }}>
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
-              Search Customer
-            </label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Customer name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
-              />
-            </div>
+      {loading ? (
+        <TableSkeleton rows={8} cols={6} />
+      ) : (
+        <>
+          {/* Hero revenue + pending */}
+          <div className="stagger-children grid gap-4 md:grid-cols-2">
+            <StatCard index={0} hero label="Total Revenue" value={`₹${stats.totalRevenue.toLocaleString()}`} icon={TrendingUp} accent="primary" hint="Collected from paid bills" />
+            <StatCard index={1} hero label="Pending" value={`₹${stats.pendingRevenue.toLocaleString()}`} icon={DollarSign} accent="amber" hint="Awaiting payment" />
           </div>
 
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
-              Status
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none cursor-pointer"
-            >
-              <option value="ALL">All Status</option>
-              <option value="PAID">Paid</option>
-              <option value="UNPAID">Unpaid</option>
-              <option value="FINALIZED">Finalized</option>
-              <option value="DRAFT">Draft</option>
-            </select>
+          {/* Count stats */}
+          <div className="stagger-children grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <StatCard index={0} label="Total Bills" value={stats.total} icon={Receipt} accent="stone" />
+            <StatCard index={1} label="Paid" value={stats.paid} icon={CheckCircle} accent="green" />
+            <StatCard index={2} label="Unpaid" value={stats.unpaid} icon={Clock} accent="red" />
+            <StatCard index={3} label="Draft" value={stats.draft} icon={FileText} accent="stone" />
           </div>
 
-          {/* GST Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
-              Invoice Type
-            </label>
-            <select
-              value={gstFilter}
-              onChange={(e) => setGstFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none cursor-pointer"
-            >
-              <option value="ALL">All Invoices</option>
-              <option value="GST">GST Only</option>
-              <option value="NON_GST">Non-GST Only</option>
-            </select>
-          </div>
-
-          {/* Date From */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
-              From Date
-            </label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
-            />
-          </div>
-
-          {/* Date To */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
-              To Date
-            </label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all outline-none"
-            />
-          </div>
-
-          {/* Clear Button */}
-          <div className="flex items-end">
+          {/* Collapsible filters */}
+          <div className="card">
             <button
-              onClick={clearFilters}
-              className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
+              onClick={() => setFiltersOpen(o => !o)}
+              aria-expanded={filtersOpen}
+              className="flex w-full items-center justify-between"
             >
-              <X className="w-4 h-4" />
-              Clear
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Bills Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              All Bills
-              <span className="ml-2 px-2.5 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
-                {filteredBills.length}
+              <span className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <Filter className="h-5 w-5 text-gray-600" /> Filters
+                {activeFilterCount > 0 && (
+                  <span className="rounded-full px-2 py-0.5 text-xs font-medium text-white" style={{ background: 'hsl(var(--primary))' }}>
+                    {activeFilterCount}
+                  </span>
+                )}
               </span>
-            </h2>
+              <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {filtersOpen && (
+              <div className="animate-slide-down mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+                <div className="lg:col-span-2">
+                  <label className="col-label mb-2 block">Search Customer</label>
+                  <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Customer name..." />
+                </div>
+                <div>
+                  <label className="col-label mb-2 block">Status</label>
+                  <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="field-input cursor-pointer">
+                    <option value="ALL">All Status</option>
+                    <option value="PAID">Paid</option>
+                    <option value="UNPAID">Unpaid</option>
+                    <option value="FINALIZED">Finalized</option>
+                    <option value="DRAFT">Draft</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="col-label mb-2 block">Invoice Type</label>
+                  <select value={gstFilter} onChange={(e) => setGstFilter(e.target.value)} className="field-input cursor-pointer">
+                    <option value="ALL">All Invoices</option>
+                    <option value="GST">GST Only</option>
+                    <option value="NON_GST">Non-GST Only</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="col-label mb-2 block">From Date</label>
+                  <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="field-input" />
+                </div>
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <label className="col-label mb-2 block">To Date</label>
+                    <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="field-input" />
+                  </div>
+                  <button onClick={clearFilters} aria-label="Clear filters"
+                    className="flex h-[42px] items-center justify-center rounded-lg bg-muted px-3 text-gray-700 transition-colors hover:bg-gray-200">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Invoice No.
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Bill Date
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredBills.length > 0 ? (
-                filteredBills.map((bill) => (
-                  <tr
-                    key={bill.id}
-                    className="hover:bg-gray-50 transition-all"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-mono text-sm font-medium text-gray-900">
-                          {bill.invoice_number || `#${bill.id.slice(0, 8)}`}
-                        </span>
-                        {bill.is_gst_bill && (
-                          <span className="text-xs text-green-600 font-medium">GST</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Calendar className="h-4 w-4 text-gray-400" />
-                        {new Date(bill.bill_date).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white text-xs font-bold">
-                          {bill.customer?.full_name?.charAt(0) || '?'}
-                        </div>
-                        <span className="font-medium text-gray-900">
-                          {bill.customer?.full_name || 'Unknown'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-sm rounded-lg">
-                        {bill.bill_type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-gray-900">
-                        ₹{bill.total_amount.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {getStatusBadge(bill.status)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleViewBill(bill)}
-                        className="p-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-200 transition-all"
-                        title="View Bill Details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                    </td>
+          {/* Table */}
+          <div className="card overflow-hidden">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                All Bills
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-sm text-gray-600">{filteredBills.length}</span>
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="col-label px-4 py-3 text-left">Invoice No.</th>
+                    <th className="col-label px-4 py-3 text-left">Bill Date</th>
+                    <th className="col-label px-4 py-3 text-left">Customer</th>
+                    <th className="col-label px-4 py-3 text-left">Type</th>
+                    <th className="col-label px-4 py-3 text-left">Total</th>
+                    <th className="col-label px-4 py-3 text-left">Status</th>
+                    <th className="col-label px-4 py-3 text-right">Actions</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <Receipt className="w-12 h-12 text-gray-300" />
-                      <p className="text-gray-500">No bills found</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody>
+                  {filteredBills.length > 0 ? (
+                    filteredBills.map((bill, idx) => (
+                      <tr key={bill.id} className="group border-b border-gray-50" style={{ background: idx % 2 ? 'hsl(36 20% 98%)' : undefined }}>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="font-mono text-sm font-medium text-gray-900">{bill.invoice_number || `#${bill.id.slice(0, 8)}`}</span>
+                            {bill.is_gst_bill && (
+                              <span className="mt-0.5 w-fit rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: 'hsl(var(--status-blue)/0.12)', color: 'hsl(210 65% 35%)' }}>GST</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Calendar className="h-4 w-4 text-gray-400" /> {new Date(bill.bill_date).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar name={bill.customer?.full_name} size="sm" />
+                            <span className="font-medium text-gray-900">{bill.customer?.full_name || 'Unknown'}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="rounded-md bg-muted px-2.5 py-1 text-sm text-gray-600">{bill.bill_type}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-semibold tabular-nums" style={{ color: AMOUNT_COLOR[bill.status] ?? 'hsl(var(--foreground))' }}>
+                            ₹{bill.total_amount.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3"><StatusBadge status={bill.status} /></td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                            <button onClick={() => handleViewBill(bill)} aria-label="View bill details"
+                              className="rounded-lg bg-muted p-2 text-gray-600 transition-colors hover:bg-gray-200">
+                              <Eye className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr><td colSpan={7}><EmptyState icon={Receipt} title="No bills found" hint="Try adjusting your filters." /></td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
-      {/* Bill View Modal */}
-      <BillViewModal
-        open={isViewModalOpen}
-        onOpenChange={setIsViewModalOpen}
-        bill={selectedBill}
-      />
+      <BillViewModal open={isViewModalOpen} onOpenChange={setIsViewModalOpen} bill={selectedBill} />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 import type { Bill, Customer, Settings } from '@/types'
+import { gstSplit, formatRate } from '@/lib/gst'
 
 interface BillPrintProps {
   bill: Bill
@@ -58,7 +59,14 @@ const BillPrint = forwardRef<HTMLDivElement, BillPrintProps>(({ bill, customer, 
     return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
+  const formatDateTime = (value?: string) => {
+    if (!value) return ''
+    const d = new Date(value)
+    return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+  }
+
   const totalInWords = `Rupees ${numberToWords(Math.floor(bill.total_amount))} Only`
+  const { cgstAmount, sgstAmount, cgstRate, sgstRate } = gstSplit(bill.subtotal, bill.tax_amount)
 
   return (
     <div ref={ref} className="bill-print-container bg-white text-black p-10 w-[210mm] min-h-[297mm]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -79,11 +87,17 @@ const BillPrint = forwardRef<HTMLDivElement, BillPrintProps>(({ bill, customer, 
           </div>
           <p className="text-2xl font-bold text-gray-900 mt-3">{bill.invoice_number || `#${billNumber}`}</p>
           <p className="text-sm text-gray-500">{formatDate(bill.bill_date)}</p>
+          {bill.arrival_datetime && (
+            <p className="text-sm text-gray-500">Arrival: {formatDateTime(bill.arrival_datetime)}</p>
+          )}
+          {bill.departure_datetime && (
+            <p className="text-sm text-gray-500">Departure: {formatDateTime(bill.departure_datetime)}</p>
+          )}
         </div>
       </div>
 
-      {/* GST Info - Subtle line */}
-      {settings.gst_number && (
+      {/* GST Info - Subtle line (only on GST/tax invoices) */}
+      {bill.is_gst_bill && settings.gst_number && (
         <div className="text-xs text-gray-500 mb-6 pb-6 border-b border-gray-200">
           GSTIN: {settings.gst_number}
           {settings.state_name && settings.state_code && (
@@ -149,10 +163,16 @@ const BillPrint = forwardRef<HTMLDivElement, BillPrintProps>(({ bill, customer, 
             <span className="text-gray-900">{bill.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
           {bill.tax_amount > 0 && (
-            <div className="flex justify-between py-2 text-sm">
-              <span className="text-gray-500">GST</span>
-              <span className="text-gray-900">{bill.tax_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-            </div>
+            <>
+              <div className="flex justify-between py-2 text-sm">
+                <span className="text-gray-500">CGST ({formatRate(cgstRate)}%)</span>
+                <span className="text-gray-900">{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between py-2 text-sm">
+                <span className="text-gray-500">SGST ({formatRate(sgstRate)}%)</span>
+                <span className="text-gray-900">{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+            </>
           )}
           {bill.discount_amount > 0 && (
             <div className="flex justify-between py-2 text-sm">

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Econ",
+  "outputfilename": "Econ",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Econ",
+    "email": "noreply@econ.local"
+  },
+  "info": {
+    "companyName": "Econ",
+    "productName": "Econ",
+    "productVersion": "1.0.0",
+    "copyright": "(c) 2026 Econ",
+    "comments": "Hotel Management System"
+  }
+}

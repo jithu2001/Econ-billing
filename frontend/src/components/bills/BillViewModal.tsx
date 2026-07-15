@@ -4,6 +4,7 @@ import { useReactToPrint } from 'react-to-print'
 import type { Bill, Customer, Settings } from '../../types'
 import { customerService, settingsService } from '@/services'
 import BillPrint from './BillPrint'
+import { gstSplit, formatRate } from '@/lib/gst'
 
 interface BillViewModalProps {
   open: boolean
@@ -57,6 +58,13 @@ export default function BillViewModal({ open, onOpenChange, bill }: BillViewModa
   })
 
   if (!bill) return null
+
+  const { cgstAmount, sgstAmount, cgstRate, sgstRate } = gstSplit(bill.subtotal, bill.tax_amount)
+
+  const formatDateTime = (value?: string) => {
+    if (!value) return ''
+    return new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+  }
 
   const getStatusStyle = (status: string) => {
     const styles: Record<string, string> = {
@@ -143,6 +151,18 @@ export default function BillViewModal({ open, onOpenChange, bill }: BillViewModa
                           {bill.bill_type}
                         </span>
                       </div>
+                      {bill.arrival_datetime && (
+                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                          <div className="text-gray-500 text-sm mb-1">Arrival</div>
+                          <p className="text-gray-900 font-medium">{formatDateTime(bill.arrival_datetime)}</p>
+                        </div>
+                      )}
+                      {bill.departure_datetime && (
+                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                          <div className="text-gray-500 text-sm mb-1">Departure</div>
+                          <p className="text-gray-900 font-medium">{formatDateTime(bill.departure_datetime)}</p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Line Items */}
@@ -169,10 +189,16 @@ export default function BillViewModal({ open, onOpenChange, bill }: BillViewModa
                         <span className="text-gray-700">₹{bill.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                       </div>
                       {bill.tax_amount > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Tax (GST)</span>
-                          <span className="text-gray-700">₹{bill.tax_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                        </div>
+                        <>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">CGST ({formatRate(cgstRate)}%)</span>
+                            <span className="text-gray-700">₹{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">SGST ({formatRate(sgstRate)}%)</span>
+                            <span className="text-gray-700">₹{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                        </>
                       )}
                       {bill.discount_amount > 0 && (
                         <div className="flex justify-between text-sm">
