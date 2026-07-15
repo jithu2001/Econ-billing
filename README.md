@@ -143,7 +143,7 @@ The SQLite database is created and migrated automatically at:
 3. Enter the registration token: `919847073856`
 4. Create your admin account
 5. Go to **Settings** to configure your lodge details (name, address, GSTIN, etc.)
-6. Start adding rooms, customers, and reservations
+6. Start adding rooms, customers, and reservations.
 
 ## License
 
