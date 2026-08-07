@@ -10,3 +10,5 @@ export function Finalize(arg1:string):Promise<void>;
 export function GetByCustomerID(arg1:string):Promise<Array<models.Bill>>;
 
 export function GetByID(arg1:string):Promise<models.Bill>;
+
+export function Update(arg1:string,arg2:bindings.BillInput):Promise<models.Bill>;

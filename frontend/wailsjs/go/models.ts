@@ -20,6 +20,7 @@ export namespace bindings {
 	    bill_type: string;
 	    bill_date: string;
 	    is_gst_bill: boolean;
+	    gst_inclusive: boolean;
 	    subtotal: number;
 	    tax_amount: number;
 	    discount_amount: number;
@@ -40,6 +41,7 @@ export namespace bindings {
 	        this.bill_type = source["bill_type"];
 	        this.bill_date = source["bill_date"];
 	        this.is_gst_bill = source["is_gst_bill"];
+	        this.gst_inclusive = source["gst_inclusive"];
 	        this.subtotal = source["subtotal"];
 	        this.tax_amount = source["tax_amount"];
 	        this.discount_amount = source["discount_amount"];
@@ -460,6 +462,7 @@ export namespace models {
 	    bill_date: string;
 	    invoice_number: string;
 	    is_gst_bill: boolean;
+	    gst_inclusive: boolean;
 	    subtotal: number;
 	    tax_amount: number;
 	    discount_amount: number;
@@ -490,6 +493,7 @@ export namespace models {
 	        this.bill_date = source["bill_date"];
 	        this.invoice_number = source["invoice_number"];
 	        this.is_gst_bill = source["is_gst_bill"];
+	        this.gst_inclusive = source["gst_inclusive"];
 	        this.subtotal = source["subtotal"];
 	        this.tax_amount = source["tax_amount"];
 	        this.discount_amount = source["discount_amount"];

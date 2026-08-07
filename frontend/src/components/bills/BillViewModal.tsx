@@ -10,9 +10,10 @@ interface BillViewModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   bill: Bill | null
+  onEdit?: (bill: Bill) => void
 }
 
-export default function BillViewModal({ open, onOpenChange, bill }: BillViewModalProps) {
+export default function BillViewModal({ open, onOpenChange, bill, onEdit }: BillViewModalProps) {
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [settings, setSettings] = useState<Settings>({
     lodge_name: 'Econ',
@@ -231,6 +232,14 @@ export default function BillViewModal({ open, onOpenChange, bill }: BillViewModa
                 >
                   Close
                 </button>
+                {onEdit && (
+                  <button
+                    onClick={() => { onOpenChange(false); onEdit(bill) }}
+                    className="px-4 py-2.5 bg-white border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-all"
+                  >
+                    Edit
+                  </button>
+                )}
                 <button
                   onClick={() => handlePrint()}
                   disabled={loading}

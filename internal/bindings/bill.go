@@ -19,6 +19,7 @@ type BillInput struct {
 	BillType          models.BillType     `json:"bill_type"`
 	BillDate          string              `json:"bill_date"`
 	IsGSTBill         bool                `json:"is_gst_bill"`
+	GSTInclusive      bool                `json:"gst_inclusive"`
 	Subtotal          float64             `json:"subtotal"`
 	TaxAmount         float64             `json:"tax_amount"`
 	DiscountAmount    float64             `json:"discount_amount"`
@@ -64,6 +65,7 @@ func (b *BillBinding) Create(in BillInput) (*models.Bill, error) {
 		CustomerID: custID, ReservationID: resID,
 		BillType: in.BillType, BillDate: in.BillDate,
 		IsGSTBill:         in.IsGSTBill,
+		GSTInclusive:      in.GSTInclusive,
 		Subtotal:          in.Subtotal,
 		TaxAmount:         in.TaxAmount,
 		DiscountAmount:    in.DiscountAmount,
@@ -83,6 +85,49 @@ func (b *BillBinding) Create(in BillInput) (*models.Bill, error) {
 		return nil, err
 	}
 	return bill, nil
+}
+
+func (b *BillBinding) Update(id string, in BillInput) (*models.Bill, error) {
+	uid, err := b.sess.UserID()
+	if err != nil {
+		return nil, err
+	}
+	bid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+	existing, err := b.svc.GetBillByID(bid, uid)
+	if err != nil {
+		return nil, err
+	}
+
+	// Apply editable fields; preserve identity (invoice number, customer,
+	// reservation, status, dates, timestamps, generated_by).
+	existing.IsGSTBill = in.IsGSTBill
+	existing.GSTInclusive = in.GSTInclusive
+	existing.Subtotal = in.Subtotal
+	existing.TaxAmount = in.TaxAmount
+	existing.DiscountAmount = in.DiscountAmount
+	existing.TotalAmount = in.TotalAmount
+	existing.ArrivalDateTime = in.ArrivalDateTime
+	existing.DepartureDateTime = in.DepartureDateTime
+
+	// Clear preloaded associations so GORM Save does not try to upsert them.
+	existing.Customer = nil
+	existing.Reservation = nil
+	existing.LineItems = nil
+
+	lineItems := make([]models.BillLineItem, len(in.LineItems))
+	for i, li := range in.LineItems {
+		lineItems[i] = models.BillLineItem{
+			ID: uuid.New(), BillID: existing.ID, Description: li.Description, Amount: li.Amount,
+		}
+	}
+
+	if err := b.svc.UpdateBillWithLineItems(existing, lineItems); err != nil {
+		return nil, err
+	}
+	return existing, nil
 }
 
 func (b *BillBinding) GetByID(id string) (*models.Bill, error) {

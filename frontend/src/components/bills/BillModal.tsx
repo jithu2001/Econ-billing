@@ -9,6 +9,7 @@ interface BillModalProps {
   reservationId?: string
   reservation?: Reservation
   billType?: Bill['bill_type']
+  existingBill?: Bill
 }
 
 export default function BillModal({
@@ -17,7 +18,8 @@ export default function BillModal({
   onSubmit,
   reservationId,
   reservation,
-  billType = 'MANUAL'
+  billType = 'MANUAL',
+  existingBill
 }: BillModalProps) {
   const handleSave = (billData: BillData) => {
     onSubmit(billData)
@@ -32,6 +34,7 @@ export default function BillModal({
           billType={billType}
           reservationId={reservationId}
           reservation={reservation}
+          existingBill={existingBill}
           onSave={handleSave}
           onCancel={() => onOpenChange(false)}
         />

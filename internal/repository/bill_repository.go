@@ -67,3 +67,31 @@ func (r *BillRepository) CreateLineItem(lineItem *models.BillLineItem) error {
 func (r *BillRepository) CreateLineItems(lineItems []models.BillLineItem) error {
 	return r.db.Create(&lineItems).Error
 }
+
+func (r *BillRepository) ReplaceLineItems(billID uuid.UUID, items []models.BillLineItem) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("bill_id = ?", billID).Delete(&models.BillLineItem{}).Error; err != nil {
+			return err
+		}
+		if len(items) > 0 {
+			return tx.Create(&items).Error
+		}
+		return nil
+	})
+}
+
+// UpdateWithLineItems saves the bill and replaces its line items atomically.
+func (r *BillRepository) UpdateWithLineItems(bill *models.Bill, items []models.BillLineItem) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(bill).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("bill_id = ?", bill.ID).Delete(&models.BillLineItem{}).Error; err != nil {
+			return err
+		}
+		if len(items) > 0 {
+			return tx.Create(&items).Error
+		}
+		return nil
+	})
+}

@@ -33,6 +33,7 @@ type Bill struct {
 	BillDate          string         `gorm:"type:date;not null" json:"bill_date"`
 	InvoiceNumber     string         `gorm:"type:varchar(50)" json:"invoice_number"`
 	IsGSTBill         bool           `gorm:"default:false" json:"is_gst_bill"`
+	GSTInclusive      bool           `gorm:"default:false" json:"gst_inclusive"`
 	Subtotal          float64        `gorm:"not null;default:0" json:"subtotal"`
 	TaxAmount         float64        `gorm:"not null;default:0" json:"tax_amount"`
 	DiscountAmount    float64        `gorm:"not null;default:0" json:"discount_amount"`

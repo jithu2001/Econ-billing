@@ -7,6 +7,7 @@ export interface CreateBillRequest {
   bill_type: 'ROOM' | 'WALK_IN' | 'FOOD' | 'MANUAL';
   bill_date: string;
   is_gst_bill?: boolean;
+  gst_inclusive?: boolean;
   subtotal: number; tax_amount: number; discount_amount: number; total_amount: number;
   status?: 'DRAFT' | 'FINALIZED' | 'PAID' | 'UNPAID';
   line_items: { description: string; amount: number }[];
@@ -25,9 +26,24 @@ export const billService = {
       reservation_id: d.reservation_id ?? undefined,
       bill_type: d.bill_type, bill_date: d.bill_date,
       is_gst_bill: d.is_gst_bill ?? false,
+      gst_inclusive: d.gst_inclusive ?? false,
       subtotal: d.subtotal, tax_amount: d.tax_amount,
       discount_amount: d.discount_amount, total_amount: d.total_amount,
       status: d.status ?? 'DRAFT',
+      line_items: d.line_items,
+      arrival_datetime: d.arrival_datetime,
+      departure_datetime: d.departure_datetime,
+    } as any) as unknown as Promise<Bill>,
+  update: (id: string, d: CreateBillRequest) =>
+    BillAPI.Update(id, {
+      customer_id: d.customer_id,
+      reservation_id: d.reservation_id ?? undefined,
+      bill_type: d.bill_type, bill_date: d.bill_date,
+      is_gst_bill: d.is_gst_bill ?? false,
+      gst_inclusive: d.gst_inclusive ?? false,
+      subtotal: d.subtotal, tax_amount: d.tax_amount,
+      discount_amount: d.discount_amount, total_amount: d.total_amount,
+      status: d.status ?? 'FINALIZED',
       line_items: d.line_items,
       arrival_datetime: d.arrival_datetime,
       departure_datetime: d.departure_datetime,

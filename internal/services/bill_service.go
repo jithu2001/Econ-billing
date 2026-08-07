@@ -71,6 +71,13 @@ func (s *BillService) UpdateBill(bill *models.Bill) error {
 	return s.repo.Update(bill)
 }
 
+func (s *BillService) UpdateBillWithLineItems(bill *models.Bill, lineItems []models.BillLineItem) error {
+	for i := range lineItems {
+		lineItems[i].BillID = bill.ID
+	}
+	return s.repo.UpdateWithLineItems(bill, lineItems)
+}
+
 func (s *BillService) FinalizeBill(id uuid.UUID, userID uuid.UUID) error {
 	return s.repo.UpdateStatus(id, userID, models.BillStatusFinalized)
 }

@@ -71,6 +71,7 @@ export interface Bill {
   bill_date: string
   invoice_number: string
   is_gst_bill: boolean
+  gst_inclusive?: boolean
   subtotal: number
   tax_amount: number
   discount_amount: number

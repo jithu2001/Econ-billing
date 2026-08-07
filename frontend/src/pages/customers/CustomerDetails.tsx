@@ -26,6 +26,7 @@ export default function CustomerDetails() {
   const [isReservationFormOpen, setIsReservationFormOpen] = useState(false)
   const [selectedReservationId, setSelectedReservationId] = useState<string | undefined>()
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
+  const [editingBill, setEditingBill] = useState<Bill | null>(null)
 
   useEffect(() => {
     if (id) loadCustomerData()
@@ -70,7 +71,14 @@ export default function CustomerDetails() {
   }
 
   const handleCreateBill = (reservationId?: string) => {
+    setEditingBill(null)
     setSelectedReservationId(reservationId)
+    setIsBillModalOpen(true)
+  }
+
+  const handleEditBill = (bill: Bill) => {
+    setEditingBill(bill)
+    setSelectedReservationId(bill.reservation_id)
     setIsBillModalOpen(true)
   }
 
@@ -83,6 +91,7 @@ export default function CustomerDetails() {
         bill_type: billData.billType as 'ROOM' | 'WALK_IN' | 'FOOD' | 'MANUAL',
         bill_date: new Date().toISOString().split('T')[0],
         is_gst_bill: billData.enableGST,
+        gst_inclusive: billData.gstInclusive,
         subtotal: billData.subtotal,
         tax_amount: billData.taxAmount,
         discount_amount: billData.discountAmount,
@@ -92,10 +101,15 @@ export default function CustomerDetails() {
         arrival_datetime: billData.arrivalDateTime,
         departure_datetime: billData.departureDateTime,
       }
-      await billService.create(billRequest as any)
+      if (editingBill) {
+        await billService.update(editingBill.id, { ...billRequest, customer_id: editingBill.customer_id, reservation_id: editingBill.reservation_id } as any)
+      } else {
+        await billService.create(billRequest as any)
+      }
       await loadCustomerData()
       setIsBillModalOpen(false)
       setSelectedReservationId(undefined)
+      setEditingBill(null)
     } catch (error) {
       console.error('Failed to create bill:', handleApiError(error))
       throw error
@@ -181,9 +195,10 @@ export default function CustomerDetails() {
         onSubmit={handleBillSubmit}
         reservationId={selectedReservationId}
         reservation={selectedReservationId ? reservations.find(r => r.id === selectedReservationId) : undefined}
-        billType={selectedReservationId ? 'ROOM' : 'MANUAL'}
+        billType={editingBill ? editingBill.bill_type : (selectedReservationId ? 'ROOM' : 'MANUAL')}
+        existingBill={editingBill ?? undefined}
       />
-      <BillViewModal open={isBillViewOpen} onOpenChange={setIsBillViewOpen} bill={selectedBill} />
+      <BillViewModal open={isBillViewOpen} onOpenChange={setIsBillViewOpen} bill={selectedBill} onEdit={handleEditBill} />
       {selectedBill && (
         <PaymentForm
           open={isPaymentFormOpen}

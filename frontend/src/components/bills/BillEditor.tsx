@@ -4,7 +4,7 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card'
-import type { BillLineItem, Reservation } from '../../types'
+import type { Bill, BillLineItem, Reservation } from '../../types'
 import { gstSplit, formatRate } from '@/lib/gst'
 
 interface BillEditorProps {
@@ -13,6 +13,7 @@ interface BillEditorProps {
   reservation?: Reservation
   onSave?: (billData: BillData) => void
   onCancel?: () => void
+  existingBill?: Bill
 }
 
 export interface BillData {
@@ -24,6 +25,7 @@ export interface BillData {
   discountAmount: number
   totalAmount: number
   enableGST: boolean
+  gstInclusive: boolean
   gstPercentage: number
   checkInDate?: string
   checkOutDate?: string
@@ -34,27 +36,49 @@ export interface BillData {
 
 type EditableItem = Omit<BillLineItem, 'id' | 'bill_id' | 'created_at'>
 
-export default function BillEditor({ billType, reservationId, reservation, onSave, onCancel }: BillEditorProps) {
+export default function BillEditor({ billType, reservationId, reservation, onSave, onCancel, existingBill }: BillEditorProps) {
   const isStayBill = billType === 'ROOM' || billType === 'MANUAL'
 
+  const editMode = !!existingBill
+
+  const splitDateTime = (v?: string): [string, string] => {
+    if (!v) return ['', '']
+    const [d, t = ''] = v.split('T')
+    return [d || '', t.slice(0, 5)]
+  }
+
   // Stay: arrival/departure date+time drive both the bill display and the nights calc.
-  const [arrivalDate, setArrivalDate] = useState(
-    reservation ? reservation.actual_check_in_date || reservation.check_in_date : ''
-  )
-  const [arrivalTime, setArrivalTime] = useState(reservation ? '12:00' : '')
-  const [departureDate, setDepartureDate] = useState(
-    reservation ? reservation.actual_check_out_date || reservation.expected_check_out_date : ''
-  )
-  const [departureTime, setDepartureTime] = useState(reservation ? '11:00' : '')
+  const [initArrivalDate, initArrivalTime]: [string, string] = existingBill
+    ? splitDateTime(existingBill.arrival_datetime)
+    : reservation
+      ? [reservation.actual_check_in_date || reservation.check_in_date, '12:00']
+      : ['', '']
+  const [initDepartureDate, initDepartureTime]: [string, string] = existingBill
+    ? splitDateTime(existingBill.departure_datetime)
+    : reservation
+      ? [reservation.actual_check_out_date || reservation.expected_check_out_date, '11:00']
+      : ['', '']
+  const [arrivalDate, setArrivalDate] = useState(initArrivalDate)
+  const [arrivalTime, setArrivalTime] = useState(initArrivalTime)
+  const [departureDate, setDepartureDate] = useState(initDepartureDate)
+  const [departureTime, setDepartureTime] = useState(initDepartureTime)
   const [ratePerNight, setRatePerNight] = useState(reservation?.room?.type?.default_rate || 1000)
 
   // User-entered extras (the room charge is computed automatically, not stored here).
-  const [extraItems, setExtraItems] = useState<EditableItem[]>([{ description: '', amount: 0 }])
+  const [extraItems, setExtraItems] = useState<EditableItem[]>(
+    existingBill?.line_items?.length
+      ? existingBill.line_items.map((li) => ({ description: li.description, amount: li.amount }))
+      : [{ description: '', amount: 0 }]
+  )
 
-  const [enableGST, setEnableGST] = useState(true)
-  const [gstPercentage, setGstPercentage] = useState(18)
-  const [gstInclusive, setGstInclusive] = useState(false)
-  const [discountAmount, setDiscountAmount] = useState(0)
+  const [enableGST, setEnableGST] = useState(existingBill ? existingBill.is_gst_bill : true)
+  const [gstPercentage, setGstPercentage] = useState(
+    existingBill && existingBill.subtotal > 0
+      ? Math.round((existingBill.tax_amount / existingBill.subtotal) * 10000) / 100
+      : 18
+  )
+  const [gstInclusive, setGstInclusive] = useState(existingBill?.gst_inclusive ?? false)
+  const [discountAmount, setDiscountAmount] = useState(existingBill?.discount_amount ?? 0)
 
   // Combine date + time into the ISO value persisted on the bill (empty if no date set).
   const arrivalDateTime = arrivalDate ? `${arrivalDate}T${arrivalTime || '00:00'}` : ''
@@ -71,7 +95,7 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
 
   // Auto room charge for stay bills — recomputes live from rate × nights.
   const roomNumber = reservation?.room?.room_number || ''
-  const roomChargeAmount = isStayBill && ratePerNight > 0 && numberOfNights > 0 ? ratePerNight * numberOfNights : 0
+  const roomChargeAmount = !editMode && isStayBill && ratePerNight > 0 && numberOfNights > 0 ? ratePerNight * numberOfNights : 0
   const roomChargeDescription =
     `Room Charge${roomNumber ? ` - ${roomNumber}` : ''} (${numberOfNights} ${numberOfNights === 1 ? 'night' : 'nights'} × ₹${ratePerNight}/night)`
 
@@ -141,6 +165,7 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
       discountAmount,
       totalAmount,
       enableGST,
+      gstInclusive,
       gstPercentage,
       checkInDate: arrivalDate,
       checkOutDate: departureDate,
@@ -212,7 +237,7 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
                   </div>
                 </div>
 
-                {isStayBill && (
+                {isStayBill && !editMode && (
                   <div className="grid grid-cols-2 gap-3 items-end">
                     <div>
                       <Label htmlFor="rate_per_night" className="text-xs">Rate per Night (₹)</Label>
@@ -393,13 +418,22 @@ export default function BillEditor({ billType, reservationId, reservation, onSav
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            <Button variant="outline" className="flex-1" onClick={handleSave}>
-              Save as Draft
-            </Button>
-            <Button className="flex-1" onClick={handleSave}>
-              <Receipt className="mr-2 h-4 w-4" />
-              Finalize Bill
-            </Button>
+            {editMode ? (
+              <Button className="flex-1" onClick={handleSave}>
+                <Receipt className="mr-2 h-4 w-4" />
+                Update Bill
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" className="flex-1" onClick={handleSave}>
+                  Save as Draft
+                </Button>
+                <Button className="flex-1" onClick={handleSave}>
+                  <Receipt className="mr-2 h-4 w-4" />
+                  Finalize Bill
+                </Button>
+              </>
+            )}
             {onCancel && (
               <Button variant="ghost" onClick={onCancel}>
                 Cancel

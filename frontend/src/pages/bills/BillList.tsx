@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Receipt, Calendar, Filter, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X, Eye, ChevronDown } from 'lucide-react'
+import { Receipt, Calendar, Filter, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X, Eye, ChevronDown, Pencil } from 'lucide-react'
 import { billService, customerService } from '@/services'
 import type { Bill } from '@/types'
 import { handleApiError } from '@/lib/bindings'
 import BillViewModal from '@/components/bills/BillViewModal'
+import BillModal from '@/components/bills/BillModal'
+import { type BillData } from '@/components/bills/BillEditor'
 import { Avatar, StatCard, StatusBadge, SearchInput, EmptyState, TableSkeleton, PageHeader } from '@/components/common'
 
 const AMOUNT_COLOR: Record<string, string> = {
@@ -27,6 +29,8 @@ export default function BillList() {
 
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [editingBill, setEditingBill] = useState<Bill | null>(null)
+  const [isEditOpen, setIsEditOpen] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -80,6 +84,39 @@ export default function BillList() {
   const handleViewBill = (bill: Bill) => {
     setSelectedBill(bill)
     setIsViewModalOpen(true)
+  }
+
+  const handleEditBill = (bill: Bill) => {
+    setEditingBill(bill)
+    setIsEditOpen(true)
+  }
+
+  const handleEditSubmit = async (billData: BillData) => {
+    if (!editingBill) return
+    try {
+      await billService.update(editingBill.id, {
+        customer_id: editingBill.customer_id,
+        reservation_id: editingBill.reservation_id,
+        bill_type: editingBill.bill_type,
+        bill_date: editingBill.bill_date,
+        is_gst_bill: billData.enableGST,
+        gst_inclusive: billData.gstInclusive,
+        subtotal: billData.subtotal,
+        tax_amount: billData.taxAmount,
+        discount_amount: billData.discountAmount,
+        total_amount: billData.totalAmount,
+        status: editingBill.status,
+        line_items: billData.lineItems.map((i) => ({ description: i.description, amount: i.amount })),
+        arrival_datetime: billData.arrivalDateTime,
+        departure_datetime: billData.departureDateTime,
+      } as any)
+      await loadData()
+      setIsEditOpen(false)
+      setEditingBill(null)
+    } catch (error) {
+      console.error('Failed to update bill:', handleApiError(error))
+      throw error
+    }
   }
 
   const stats = {
@@ -231,7 +268,11 @@ export default function BillList() {
                         </td>
                         <td className="px-4 py-3"><StatusBadge status={bill.status} /></td>
                         <td className="px-4 py-3">
-                          <div className="flex justify-end opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                          <div className="flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                            <button onClick={() => handleEditBill(bill)} aria-label="Edit bill"
+                              className="rounded-lg bg-muted p-2 text-gray-600 transition-colors hover:bg-gray-200">
+                              <Pencil className="h-4 w-4" />
+                            </button>
                             <button onClick={() => handleViewBill(bill)} aria-label="View bill details"
                               className="rounded-lg bg-muted p-2 text-gray-600 transition-colors hover:bg-gray-200">
                               <Eye className="h-4 w-4" />
@@ -250,7 +291,14 @@ export default function BillList() {
         </>
       )}
 
-      <BillViewModal open={isViewModalOpen} onOpenChange={setIsViewModalOpen} bill={selectedBill} />
+      <BillViewModal open={isViewModalOpen} onOpenChange={setIsViewModalOpen} bill={selectedBill} onEdit={handleEditBill} />
+      <BillModal
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        onSubmit={handleEditSubmit}
+        existingBill={editingBill ?? undefined}
+        billType={editingBill?.bill_type}
+      />
     </div>
   )
 }

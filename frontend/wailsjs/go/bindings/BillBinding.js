@@ -17,3 +17,7 @@ export function GetByCustomerID(arg1) {
 export function GetByID(arg1) {
   return window['go']['bindings']['BillBinding']['GetByID'](arg1);
 }
+
+export function Update(arg1, arg2) {
+  return window['go']['bindings']['BillBinding']['Update'](arg1, arg2);
+}
