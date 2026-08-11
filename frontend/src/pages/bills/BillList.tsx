@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Receipt, Calendar, Filter, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X, Eye, ChevronDown, Pencil } from 'lucide-react'
+import { Receipt, Calendar, Filter, DollarSign, Clock, CheckCircle, FileText, TrendingUp, X, Eye, ChevronDown, Pencil, Download } from 'lucide-react'
 import { billService, customerService } from '@/services'
 import type { Bill } from '@/types'
 import { handleApiError } from '@/lib/bindings'
 import BillViewModal from '@/components/bills/BillViewModal'
 import BillModal from '@/components/bills/BillModal'
 import { type BillData } from '@/components/bills/BillEditor'
+import { gstSplit } from '@/lib/gst'
+import { toCsv, downloadCsv } from '@/lib/csv'
+
+// Local YYYY-MM-DD (matches the date inputs / bill_date format).
+const toYMD = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 import { Avatar, StatCard, StatusBadge, SearchInput, EmptyState, TableSkeleton, PageHeader } from '@/components/common'
 
 const AMOUNT_COLOR: Record<string, string> = {
@@ -19,7 +25,7 @@ export default function BillList() {
   const [loading, setLoading] = useState(true)
   const [bills, setBills] = useState<Bill[]>([])
   const [filteredBills, setFilteredBills] = useState<Bill[]>([])
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(true)
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
   const [gstFilter, setGstFilter] = useState<string>('ALL')
@@ -79,6 +85,52 @@ export default function BillList() {
     setSearchQuery('')
     setDateFrom('')
     setDateTo('')
+  }
+
+  // Set the date range to a whole month (month is 0-indexed).
+  const setMonthRange = (year: number, month: number) => {
+    setDateFrom(toYMD(new Date(year, month, 1)))
+    setDateTo(toYMD(new Date(year, month + 1, 0)))
+  }
+
+  const presetThisMonth = () => {
+    const n = new Date()
+    setMonthRange(n.getFullYear(), n.getMonth())
+  }
+  const presetLastMonth = () => {
+    const n = new Date()
+    const d = new Date(n.getFullYear(), n.getMonth() - 1, 1)
+    setMonthRange(d.getFullYear(), d.getMonth())
+  }
+  const presetThisYear = () => {
+    const y = new Date().getFullYear()
+    setDateFrom(`${y}-01-01`)
+    setDateTo(`${y}-12-31`)
+  }
+  const presetAllDates = () => {
+    setDateFrom('')
+    setDateTo('')
+  }
+  const pickMonth = (v: string) => {
+    if (!v) return
+    const [y, m] = v.split('-').map(Number)
+    setMonthRange(y, m - 1)
+  }
+
+  const handleExportCsv = () => {
+    const rows = filteredBills.map((b) => {
+      const { cgstAmount, sgstAmount } = gstSplit(b.subtotal, b.tax_amount)
+      return [
+        new Date(b.bill_date).toLocaleDateString('en-IN'),
+        b.customer?.full_name || '',
+        b.customer?.address || '',
+        cgstAmount.toFixed(2),
+        sgstAmount.toFixed(2),
+        b.total_amount.toFixed(2),
+      ]
+    })
+    const csv = toCsv(['Date', 'Customer', 'Address', 'CGST', 'SGST', 'Total'], rows)
+    downloadCsv(`bills-${toYMD(new Date())}.csv`, csv)
   }
 
   const handleViewBill = (bill: Bill) => {
@@ -210,6 +262,18 @@ export default function BillList() {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
+
+                {/* Quick date presets + month picker */}
+                <div className="lg:col-span-6 flex flex-wrap items-end gap-2">
+                  <button onClick={presetThisMonth} className="rounded-lg bg-muted px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200">This Month</button>
+                  <button onClick={presetLastMonth} className="rounded-lg bg-muted px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200">Last Month</button>
+                  <button onClick={presetThisYear} className="rounded-lg bg-muted px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200">This Year</button>
+                  <button onClick={presetAllDates} className="rounded-lg bg-muted px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200">All</button>
+                  <div className="ml-auto">
+                    <label className="col-label mb-1 block">Pick Month</label>
+                    <input type="month" onChange={(e) => pickMonth(e.target.value)} className="field-input" />
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -221,6 +285,15 @@ export default function BillList() {
                 All Bills
                 <span className="rounded-full bg-muted px-2.5 py-0.5 text-sm text-gray-600">{filteredBills.length}</span>
               </h2>
+              <button
+                onClick={handleExportCsv}
+                disabled={filteredBills.length === 0}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'hsl(var(--primary))' }}
+              >
+                <Download className="h-4 w-4" />
+                Export CSV
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
